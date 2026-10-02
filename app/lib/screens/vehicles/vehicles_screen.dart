@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../../data/mock_data.dart';
+import '../../models/repair_case.dart';
 import '../../widgets/vehicles_card.dart';
 import 'vehicle_detail_screen.dart';
 
@@ -19,15 +20,17 @@ class VehiclesScreen extends StatelessWidget {
         itemBuilder: (context, index) {
           final vehicle = mockVehicles[index];
 
-          final repairCase = mockRepairCases
-              .where(
-                (repairCase) => repairCase.vehicleId == vehicle.id,
-              )
-              .firstOrNull;
+          RepairCase? repairCase;
+          for (final item in mockRepairCases) {
+            if (item.vehicleId == vehicle.id) {
+              repairCase = item;
+              break;
+            }
+          }
 
           return VehicleCard(
             vehicle: vehicle,
-            status: repairCase?.status,
+            status: repairCase?.status.label,
             onTap: () {
               Navigator.push(
                 context,

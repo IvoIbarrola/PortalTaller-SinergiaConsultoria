@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../../data/mock_data.dart';
+import '../../models/repair_case.dart';
 import '../../widgets/status_badge.dart';
 import '../vehicles/vehicles_screen.dart';
 
@@ -10,7 +11,7 @@ class HomeScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final activeCases = mockRepairCases
-        .where((repairCase) => repairCase.status != 'Finalizado')
+        .where((repairCase) => repairCase.status != RepairCaseStatus.finished)
         .toList();
 
     return Scaffold(
@@ -130,7 +131,7 @@ class HomeScreen extends StatelessWidget {
                               ),
                             ),
                             StatusBadge(
-                              status: repairCase.status,
+                              status: repairCase.status.label,
                             ),
                           ],
                         ),

@@ -10,6 +10,10 @@ services:
 
     volumes:
       - ./app:/workspace
+      - gradle-cache:/root/.gradle
 
     stdin_open: true
     tty: true
+
+volumes:
+  gradle-cache:

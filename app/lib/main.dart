@@ -1,9 +1,13 @@
 import 'package:flutter/material.dart';
 
-import 'screens/home/home_screen.dart';
+import 'screens/login/login_screen.dart';
 
 void main() {
   runApp(const PortalTallerApp());
+}
+
+class MyApp extends PortalTallerApp {
+  const MyApp({super.key});
 }
 
 class PortalTallerApp extends StatelessWidget {
@@ -21,7 +25,7 @@ class PortalTallerApp extends StatelessWidget {
         ),
         scaffoldBackgroundColor: const Color(0xFFF7F8FA),
       ),
-      home: const HomeScreen(),
+      home: const LoginScreen(),
     );
   }
 }

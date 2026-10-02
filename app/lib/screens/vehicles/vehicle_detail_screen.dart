@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../../data/mock_data.dart';
+import '../../models/repair_case.dart';
 import '../../models/vehicles.dart';
 import '../../widgets/status_badge.dart';
 
@@ -124,7 +125,7 @@ class VehicleDetailScreen extends StatelessWidget {
                             ),
                           ),
                           StatusBadge(
-                            status: repairCase.status,
+                            status: repairCase.status.label,
                           ),
                         ],
                       ),
