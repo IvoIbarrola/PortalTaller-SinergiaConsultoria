@@ -1,0 +1,15 @@
+services:
+  flutter:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile
+
+    container_name: portal-taller-flutter
+
+    working_dir: /workspace
+
+    volumes:
+      - ./app:/workspace
+
+    stdin_open: true
+    tty: true

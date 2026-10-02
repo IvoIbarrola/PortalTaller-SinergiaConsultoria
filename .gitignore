@@ -1,0 +1,7 @@
+# Flutter
+app/.dart_tool/
+app/build/
+
+# Gradle cache/downloads
+.gradle-download/
+.gradle-download/gradle-9.3.1-all.zip
