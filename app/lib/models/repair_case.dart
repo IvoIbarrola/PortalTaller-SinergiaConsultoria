@@ -1,21 +1,45 @@
 enum RepairCaseStatus {
-  pending,
-  inRepair,
+  newCase,
+  inReview,
+  workshopAssigned,
+  received,
+  inspection,
+  estimate,
+  approval,
   awaitingParts,
-  finished,
+  inRepair,
+  qualityControl,
+  readyForDelivery,
+  delivered,
 }
 
 extension RepairCaseStatusX on RepairCaseStatus {
   String get label {
     switch (this) {
-      case RepairCaseStatus.pending:
-        return 'Pendiente';
+      case RepairCaseStatus.newCase:
+        return 'Nuevo';
+      case RepairCaseStatus.inReview:
+        return 'En revisión';
+      case RepairCaseStatus.workshopAssigned:
+        return 'Taller asignado';
+      case RepairCaseStatus.received:
+        return 'Recibido';
+      case RepairCaseStatus.inspection:
+        return 'Inspección';
+      case RepairCaseStatus.estimate:
+        return 'Presupuesto';
+      case RepairCaseStatus.approval:
+        return 'Aprobación';
+      case RepairCaseStatus.awaitingParts:
+        return 'Esperando repuestos';
       case RepairCaseStatus.inRepair:
         return 'En reparación';
-      case RepairCaseStatus.awaitingParts:
-        return 'En espera de repuestos';
-      case RepairCaseStatus.finished:
-        return 'Finalizado';
+      case RepairCaseStatus.qualityControl:
+        return 'Control de calidad';
+      case RepairCaseStatus.readyForDelivery:
+        return 'Listo para entregar';
+      case RepairCaseStatus.delivered:
+        return 'Entregado';
     }
   }
 }

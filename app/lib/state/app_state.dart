@@ -36,12 +36,20 @@ class AppState extends ChangeNotifier {
     switch (_currentUser!.role) {
       case UserRole.insured:
         return repairCases
-            .where((repairCase) => repairCase.insuredUserId == _currentUser!.id)
+            .where(
+              (repairCase) =>
+                  repairCase.insuredUserId == _currentUser!.id,
+            )
             .toList();
+
       case UserRole.workshop:
         return repairCases
-            .where((repairCase) => repairCase.workshopId == _currentUser!.workshopId)
+            .where(
+              (repairCase) =>
+                  repairCase.workshopId == _currentUser!.workshopId,
+            )
             .toList();
+
       case UserRole.consultant:
         return List<RepairCase>.from(repairCases);
     }
@@ -84,6 +92,7 @@ class AppState extends ChangeNotifier {
         .where((message) => message.caseId == caseId)
         .toList()
       ..sort((a, b) => a.createdAt.compareTo(b.createdAt));
+
     return sorted;
   }
 
@@ -105,15 +114,20 @@ class AppState extends ChangeNotifier {
     String? workshopId,
   }) {
     final id = 'SINI-${DateTime.now().millisecondsSinceEpoch}';
+
     final repairCase = RepairCase(
       id: id,
       vehicleId: vehicleId,
       insuredUserId: insuredUserId,
       claimNumber: claimNumber,
       description: description,
-      status: RepairCaseStatus.pending,
+      status: workshopId == null
+          ? RepairCaseStatus.newCase
+          : RepairCaseStatus.workshopAssigned,
       entryDate: DateTime.now(),
-      estimatedDeliveryDate: DateTime.now().add(const Duration(days: 12)),
+      estimatedDeliveryDate: DateTime.now().add(
+        const Duration(days: 12),
+      ),
       progress: 0,
       workshopId: workshopId,
     );
@@ -123,32 +137,54 @@ class AppState extends ChangeNotifier {
   }
 
   void assignWorkshop(String caseId, String workshopId) {
-    final index = repairCases.indexWhere((repairCase) => repairCase.id == caseId);
+    final index = repairCases.indexWhere(
+      (repairCase) => repairCase.id == caseId,
+    );
+
     if (index == -1) {
       return;
     }
 
-    repairCases[index] = repairCases[index].copyWith(workshopId: workshopId);
+    repairCases[index] = repairCases[index].copyWith(
+      workshopId: workshopId,
+      status: RepairCaseStatus.workshopAssigned,
+    );
+
     notifyListeners();
   }
 
-  void updateCaseStatus(String caseId, RepairCaseStatus status) {
-    final index = repairCases.indexWhere((repairCase) => repairCase.id == caseId);
+  void updateCaseStatus(
+    String caseId,
+    RepairCaseStatus status,
+  ) {
+    final index = repairCases.indexWhere(
+      (repairCase) => repairCase.id == caseId,
+    );
+
     if (index == -1) {
       return;
     }
 
-    repairCases[index] = repairCases[index].copyWith(status: status);
+    repairCases[index] = repairCases[index].copyWith(
+      status: status,
+    );
+
     notifyListeners();
   }
 
   void updateProgress(String caseId, int progress) {
-    final index = repairCases.indexWhere((repairCase) => repairCase.id == caseId);
+    final index = repairCases.indexWhere(
+      (repairCase) => repairCase.id == caseId,
+    );
+
     if (index == -1) {
       return;
     }
 
-    repairCases[index] = repairCases[index].copyWith(progress: progress.clamp(0, 100));
+    repairCases[index] = repairCases[index].copyWith(
+      progress: progress.clamp(0, 100),
+    );
+
     notifyListeners();
   }
 
@@ -172,6 +208,7 @@ class AppState extends ChangeNotifier {
         createdAt: DateTime.now(),
       ),
     );
+
     notifyListeners();
   }
 }

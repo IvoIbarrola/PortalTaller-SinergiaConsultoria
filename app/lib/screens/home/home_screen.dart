@@ -11,7 +11,7 @@ class HomeScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final activeCases = mockRepairCases
-        .where((repairCase) => repairCase.status != RepairCaseStatus.finished)
+        .where((repairCase) => repairCase.status != RepairCaseStatus.delivered)
         .toList();
 
     return Scaffold(
