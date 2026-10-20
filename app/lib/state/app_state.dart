@@ -26,6 +26,61 @@ class AppState extends ChangeNotifier {
 
   bool get isLoggedIn => _currentUser != null;
 
+  static const String _specialAccessPassword = 'demo123';
+
+  bool isSpecialAccessCode(String code) {
+    final normalizedCode = code.trim().toUpperCase();
+
+    return normalizedCode == 'SINERGIA-2026' ||
+        normalizedCode == 'TALLER-NORTE-2026' ||
+        normalizedCode == 'TALLER-CENTRAL-2026';
+  }
+
+  User? loginWithClaimCode(String code) {
+    final normalizedCode = code.trim().toUpperCase();
+
+    for (final repairCase in repairCases) {
+      if (repairCase.claimNumber.toUpperCase() == normalizedCode) {
+        final user = getUserById(repairCase.insuredUserId);
+
+        if (user != null && user.role == UserRole.insured) {
+          loginAs(user);
+          return user;
+        }
+      }
+    }
+
+    return null;
+  }
+
+  User? loginWithSpecialAccess(String code, String password) {
+    if (password != _specialAccessPassword) {
+      return null;
+    }
+
+    final normalizedCode = code.trim().toUpperCase();
+    String? userId;
+
+    if (normalizedCode == 'SINERGIA-2026') {
+      userId = 'user-consultant';
+    } else if (normalizedCode == 'TALLER-NORTE-2026') {
+      userId = 'workshop-1-user';
+    } else if (normalizedCode == 'TALLER-CENTRAL-2026') {
+      userId = 'workshop-2-user';
+    } else {
+      return null;
+    }
+
+    final user = getUserById(userId);
+
+    if (user == null) {
+      return null;
+    }
+
+    loginAs(user);
+    return user;
+  }
+
   List<RepairCase> get allCases => List<RepairCase>.from(repairCases);
 
   List<RepairCase> get casesForCurrentUser {
@@ -36,17 +91,13 @@ class AppState extends ChangeNotifier {
     switch (_currentUser!.role) {
       case UserRole.insured:
         return repairCases
-            .where(
-              (repairCase) =>
-                  repairCase.insuredUserId == _currentUser!.id,
-            )
+            .where((repairCase) => repairCase.insuredUserId == _currentUser!.id)
             .toList();
 
       case UserRole.workshop:
         return repairCases
             .where(
-              (repairCase) =>
-                  repairCase.workshopId == _currentUser!.workshopId,
+              (repairCase) => repairCase.workshopId == _currentUser!.workshopId,
             )
             .toList();
 
@@ -88,10 +139,9 @@ class AppState extends ChangeNotifier {
   }
 
   List<Message> messagesForCase(String caseId) {
-    final sorted = messages
-        .where((message) => message.caseId == caseId)
-        .toList()
-      ..sort((a, b) => a.createdAt.compareTo(b.createdAt));
+    final sorted =
+        messages.where((message) => message.caseId == caseId).toList()
+          ..sort((a, b) => a.createdAt.compareTo(b.createdAt));
 
     return sorted;
   }
@@ -125,9 +175,7 @@ class AppState extends ChangeNotifier {
           ? RepairCaseStatus.newCase
           : RepairCaseStatus.workshopAssigned,
       entryDate: DateTime.now(),
-      estimatedDeliveryDate: DateTime.now().add(
-        const Duration(days: 12),
-      ),
+      estimatedDeliveryDate: DateTime.now().add(const Duration(days: 12)),
       progress: 0,
       workshopId: workshopId,
     );
@@ -153,10 +201,7 @@ class AppState extends ChangeNotifier {
     notifyListeners();
   }
 
-  void updateCaseStatus(
-    String caseId,
-    RepairCaseStatus status,
-  ) {
+  void updateCaseStatus(String caseId, RepairCaseStatus status) {
     final index = repairCases.indexWhere(
       (repairCase) => repairCase.id == caseId,
     );
@@ -165,9 +210,7 @@ class AppState extends ChangeNotifier {
       return;
     }
 
-    repairCases[index] = repairCases[index].copyWith(
-      status: status,
-    );
+    repairCases[index] = repairCases[index].copyWith(status: status);
 
     notifyListeners();
   }
