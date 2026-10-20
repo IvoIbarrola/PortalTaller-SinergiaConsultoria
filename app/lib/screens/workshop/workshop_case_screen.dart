@@ -7,6 +7,7 @@ import '../../widgets/progress_timeline.dart';
 import '../../widgets/status_badge.dart';
 import '../../widgets/vehicle_card.dart';
 import 'workshop_chat_screen.dart';
+import 'workshop_photos_screen.dart';
 
 class WorkshopCaseScreen extends StatefulWidget {
   final String caseId;
@@ -40,8 +41,10 @@ class _WorkshopCaseScreenState extends State<WorkshopCaseScreen> {
           color: '',
           imageUrl: '',
         );
+
     final insured = appState.getUserById(repairCase.insuredUserId);
-    final progressIndex = ((repairCase.progress / 100) * 3).round().clamp(0, 3);
+    final progressIndex =
+        ((repairCase.progress / 100) * 3).round().clamp(0, 3);
 
     return Scaffold(
       appBar: AppBar(
@@ -55,7 +58,10 @@ class _WorkshopCaseScreenState extends State<WorkshopCaseScreen> {
             children: [
               const Text(
                 'Caso asignado',
-                style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+                style: TextStyle(
+                  fontSize: 20,
+                  fontWeight: FontWeight.bold,
+                ),
               ),
               StatusBadge(status: repairCase.status.label),
             ],
@@ -77,7 +83,10 @@ class _WorkshopCaseScreenState extends State<WorkshopCaseScreen> {
                   Text('Asegurado: ${insured?.name ?? 'Sin dato'}'),
                   if (repairCase.estimatedDeliveryDate != null)
                     Text(
-                      'Entrega estimada: ${repairCase.estimatedDeliveryDate!.day}/${repairCase.estimatedDeliveryDate!.month}/${repairCase.estimatedDeliveryDate!.year}',
+                      'Entrega estimada: '
+                      '${repairCase.estimatedDeliveryDate!.day}/'
+                      '${repairCase.estimatedDeliveryDate!.month}/'
+                      '${repairCase.estimatedDeliveryDate!.year}',
                     ),
                 ],
               ),
@@ -121,13 +130,31 @@ class _WorkshopCaseScreenState extends State<WorkshopCaseScreen> {
             vehicle: vehicle,
             status: repairCase.status.label,
           ),
-          const SizedBox(height: 12),
+          const SizedBox(height: 16),
           FilledButton.icon(
             onPressed: () {
               Navigator.push(
                 context,
                 MaterialPageRoute(
-                  builder: (_) => WorkshopChatScreen(caseId: repairCase.id),
+                  builder: (_) => WorkshopPhotosScreen(
+                    caseId: repairCase.id,
+                    claimNumber: repairCase.claimNumber,
+                  ),
+                ),
+              );
+            },
+            icon: const Icon(Icons.camera_alt_outlined),
+            label: const Text('Registrar fotografías'),
+          ),
+          const SizedBox(height: 12),
+          OutlinedButton.icon(
+            onPressed: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (_) => WorkshopChatScreen(
+                    caseId: repairCase.id,
+                  ),
                 ),
               );
             },

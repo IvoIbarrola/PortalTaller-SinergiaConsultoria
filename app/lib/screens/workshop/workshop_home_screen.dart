@@ -4,6 +4,8 @@ import '../../models/user.dart';
 import '../../state/app_state.dart';
 import '../../widgets/repair_case_card.dart';
 import 'workshop_case_screen.dart';
+import 'workshop_photos_screen.dart';
+import 'package:image_picker/image_picker.dart';
 
 class WorkshopHomeScreen extends StatelessWidget {
   const WorkshopHomeScreen({super.key});
