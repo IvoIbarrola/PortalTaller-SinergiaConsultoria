@@ -83,7 +83,7 @@ class InsuredHomeScreen extends StatelessWidget {
                         ),
                   ),
                 ),
-              ),
+              ],
             ),
             const SizedBox(height: 12),
             if (cases.isEmpty)
