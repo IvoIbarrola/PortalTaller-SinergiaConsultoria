@@ -62,7 +62,6 @@ class _WorkshopChatScreenState extends State<WorkshopChatScreen> {
                       controller: _controller,
                       decoration: const InputDecoration(
                         hintText: 'Escribí un mensaje...',
-                        border: OutlineInputBorder(),
                       ),
                     ),
                   ),

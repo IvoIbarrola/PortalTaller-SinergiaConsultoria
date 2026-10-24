@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../../models/repair_case.dart';
 import '../../models/vehicle.dart';
 import '../../state/app_state.dart';
+import '../../theme/app_theme.dart';
 import '../../widgets/progress_timeline.dart';
 import '../../widgets/status_badge.dart';
 import '../../widgets/vehicle_card.dart';
@@ -51,17 +52,16 @@ class _WorkshopCaseScreenState extends State<WorkshopCaseScreen> {
         title: Text(repairCase.claimNumber),
       ),
       body: ListView(
-        padding: const EdgeInsets.all(16),
+        padding: const EdgeInsets.fromLTRB(20, 12, 20, 24),
         children: [
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              const Text(
+              Text(
                 'Caso asignado',
-                style: TextStyle(
-                  fontSize: 20,
-                  fontWeight: FontWeight.bold,
-                ),
+                style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                      fontWeight: FontWeight.w700,
+                    ),
               ),
               StatusBadge(status: repairCase.status.label),
             ],
@@ -78,6 +78,15 @@ class _WorkshopCaseScreenState extends State<WorkshopCaseScreen> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
+                  Text(
+                    'INFORMACIÓN DEL CASO',
+                    style: Theme.of(context).textTheme.labelMedium?.copyWith(
+                          color: AppTheme.tealInk,
+                          fontWeight: FontWeight.w800,
+                          letterSpacing: 0.7,
+                        ),
+                  ),
+                  const SizedBox(height: 8),
                   Text(repairCase.description),
                   const SizedBox(height: 12),
                   Text('Asegurado: ${insured?.name ?? 'Sin dato'}'),
@@ -97,7 +106,6 @@ class _WorkshopCaseScreenState extends State<WorkshopCaseScreen> {
             value: repairCase.status,
             decoration: const InputDecoration(
               labelText: 'Estado',
-              border: OutlineInputBorder(),
             ),
             items: RepairCaseStatus.values
                 .map(
@@ -113,8 +121,13 @@ class _WorkshopCaseScreenState extends State<WorkshopCaseScreen> {
               setState(() {});
             },
           ),
-          const SizedBox(height: 12),
-          Text('Progreso: ${repairCase.progress}%'),
+          const SizedBox(height: 16),
+          Text(
+            'Avance de reparación · ${repairCase.progress}%',
+            style: Theme.of(context).textTheme.titleSmall?.copyWith(
+                  fontWeight: FontWeight.w700,
+                ),
+          ),
           Slider(
             value: repairCase.progress.toDouble(),
             min: 0,

@@ -54,9 +54,11 @@ class VehicleCard extends StatelessWidget {
                     const SizedBox(height: 4),
                     Text(
                       vehicle.displayInfo,
-                      style: TextStyle(
-                        color: Colors.grey.shade700,
-                      ),
+                      style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                            color: Theme.of(context)
+                                .colorScheme
+                                .onSurfaceVariant,
+                          ),
                     ),
                     if (status != null) ...[
                       const SizedBox(height: 8),

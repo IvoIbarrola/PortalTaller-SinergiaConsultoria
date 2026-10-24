@@ -3,10 +3,12 @@ import 'package:flutter/material.dart';
 import '../../models/repair_case.dart';
 import '../../models/vehicle.dart';
 import '../../state/app_state.dart';
+import '../../theme/app_theme.dart';
 import '../../widgets/progress_timeline.dart';
 import '../../widgets/status_badge.dart';
 import '../../widgets/vehicle_card.dart';
 import '../insured/insured_chat_screen.dart';
+import '../workshop/workshop_photos_screen.dart';
 
 class CaseDetailScreen extends StatefulWidget {
   final String caseId;
@@ -51,31 +53,43 @@ class _CaseDetailScreenState extends State<CaseDetailScreen> {
         title: Text(repairCase.claimNumber),
       ),
       body: ListView(
-        padding: const EdgeInsets.all(16),
+        padding: const EdgeInsets.fromLTRB(20, 12, 20, 24),
         children: [
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              const Text(
+              Text(
                 'Detalle del caso',
-                style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
+                style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                      fontWeight: FontWeight.w700,
+                    ),
               ),
               StatusBadge(status: repairCase.status.label),
             ],
           ),
-          const SizedBox(height: 16),
+          const SizedBox(height: 20),
           ProgressTimeline(
             steps: const ['Inicio', 'Revisión', 'Reparación', 'Entrega'],
             currentIndex: progressIndex,
           ),
-          const SizedBox(height: 16),
+          const SizedBox(height: 20),
           Card(
             child: Padding(
               padding: const EdgeInsets.all(16),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(repairCase.description),
+                  Text(
+                    'INFORMACIÓN DEL CASO',
+                    style: Theme.of(context).textTheme.labelMedium?.copyWith(
+                          color: AppTheme.tealInk,
+                          fontWeight: FontWeight.w800,
+                          letterSpacing: 0.7,
+                        ),
+                  ),
+                  const SizedBox(height: 8),
+                  Text(repairCase.description,
+                      style: Theme.of(context).textTheme.bodyLarge),
                   const SizedBox(height: 12),
                   Text('Asegurado: ${insured?.name ?? 'Sin dato'}'),
                   Text('Ingreso: ${repairCase.entryDate.day}/${repairCase.entryDate.month}/${repairCase.entryDate.year}'),
@@ -92,7 +106,6 @@ class _CaseDetailScreenState extends State<CaseDetailScreen> {
             value: _selectedWorkshopId,
             decoration: const InputDecoration(
               labelText: 'Asignar taller',
-              border: OutlineInputBorder(),
             ),
             items: appState.workshops
                 .map(
@@ -113,7 +126,6 @@ class _CaseDetailScreenState extends State<CaseDetailScreen> {
             value: repairCase.status,
             decoration: const InputDecoration(
               labelText: 'Estado',
-              border: OutlineInputBorder(),
             ),
             items: RepairCaseStatus.values
                 .map(
@@ -129,8 +141,13 @@ class _CaseDetailScreenState extends State<CaseDetailScreen> {
               setState(() {});
             },
           ),
-          const SizedBox(height: 12),
-          Text('Progreso: ${repairCase.progress}%'),
+          const SizedBox(height: 16),
+          Text(
+            'Avance de reparación · ${repairCase.progress}%',
+            style: Theme.of(context).textTheme.titleSmall?.copyWith(
+                  fontWeight: FontWeight.w700,
+                ),
+          ),
           Slider(
             value: repairCase.progress.toDouble(),
             min: 0,
@@ -158,6 +175,22 @@ class _CaseDetailScreenState extends State<CaseDetailScreen> {
             },
             icon: const Icon(Icons.chat_bubble_outline),
             label: const Text('Abrir chat'),
+          ),
+          const SizedBox(height: 10),
+          OutlinedButton.icon(
+            onPressed: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (_) => WorkshopPhotosScreen(
+                    caseId: repairCase.id,
+                    claimNumber: repairCase.claimNumber,
+                  ),
+                ),
+              );
+            },
+            icon: const Icon(Icons.photo_library_outlined),
+            label: const Text('Ver registro fotográfico'),
           ),
         ],
       ),

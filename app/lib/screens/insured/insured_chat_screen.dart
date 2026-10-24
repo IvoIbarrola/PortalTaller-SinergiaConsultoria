@@ -62,7 +62,6 @@ class _InsuredChatScreenState extends State<InsuredChatScreen> {
                       controller: _controller,
                       decoration: const InputDecoration(
                         hintText: 'Escribí un mensaje...',
-                        border: OutlineInputBorder(),
                       ),
                     ),
                   ),

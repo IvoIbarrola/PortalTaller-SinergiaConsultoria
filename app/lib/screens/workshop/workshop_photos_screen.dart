@@ -91,18 +91,23 @@ class _WorkshopPhotosScreenState
       body: Column(
         children: [
           Padding(
-            padding: const EdgeInsets.all(16),
+            padding: const EdgeInsets.fromLTRB(20, 8, 20, 16),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
                   'Siniestro: ${widget.claimNumber}',
                   style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                        fontWeight: FontWeight.bold,
+                        fontWeight: FontWeight.w700,
                       ),
                 ),
                 const SizedBox(height: 8),
-                Text('Fotografías registradas: ${photos.length}'),
+                Text(
+                  '${photos.length} fotografías registradas',
+                  style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                        color: Theme.of(context).colorScheme.onSurfaceVariant,
+                      ),
+                ),
                 if (_canManagePhotos) ...[
                   const SizedBox(height: 12),
                   SizedBox(
@@ -126,21 +131,37 @@ class _WorkshopPhotosScreenState
               ],
             ),
           ),
-          const Divider(height: 1),
+          const Divider(),
           Expanded(
             child: photos.isEmpty
-                ? const Center(
+                ? Center(
                     child: Padding(
-                      padding: EdgeInsets.all(24),
+                      padding: const EdgeInsets.all(24),
                       child: Column(
                         mainAxisSize: MainAxisSize.min,
                         children: [
                           Icon(
                             Icons.photo_library_outlined,
                             size: 56,
+                            color: Theme.of(context).colorScheme.primary,
                           ),
-                          SizedBox(height: 12),
-                          Text('No hay fotografías registradas.'),
+                          const SizedBox(height: 12),
+                          Text(
+                            'No hay fotografías registradas.',
+                            style: Theme.of(context).textTheme.titleMedium,
+                          ),
+                          const SizedBox(height: 4),
+                          Text(
+                            _canManagePhotos
+                                ? 'Las imágenes del caso aparecerán acá.'
+                                : 'Todavía no se cargaron imágenes para este caso.',
+                            textAlign: TextAlign.center,
+                            style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                                  color: Theme.of(context)
+                                      .colorScheme
+                                      .onSurfaceVariant,
+                                ),
+                          ),
                         ],
                       ),
                     ),
@@ -148,11 +169,12 @@ class _WorkshopPhotosScreenState
                 : GridView.builder(
                     padding: const EdgeInsets.all(12),
                     gridDelegate:
-                        const SliverGridDelegateWithFixedCrossAxisCount(
-                      crossAxisCount: 2,
-                      crossAxisSpacing: 12,
-                      mainAxisSpacing: 12,
-                      childAspectRatio: 0.8,
+                        SliverGridDelegateWithFixedCrossAxisCount(
+                      crossAxisCount:
+                          MediaQuery.sizeOf(context).width >= 700 ? 3 : 2,
+                      crossAxisSpacing: 14,
+                      mainAxisSpacing: 14,
+                      childAspectRatio: 0.82,
                     ),
                     itemCount: photos.length,
                     itemBuilder: (context, index) {
@@ -179,8 +201,14 @@ class _WorkshopPhotosScreenState
                               left: 8,
                               bottom: 8,
                               child: Container(
-                                padding: const EdgeInsets.all(6),
-                                color: Colors.black54,
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 9,
+                                  vertical: 6,
+                                ),
+                                decoration: BoxDecoration(
+                                  color: Colors.black.withValues(alpha: 0.68),
+                                  borderRadius: BorderRadius.circular(6),
+                                ),
                                 child: Text(
                                   'Foto ${index + 1}',
                                   style: const TextStyle(
@@ -193,9 +221,17 @@ class _WorkshopPhotosScreenState
                               Positioned(
                                 top: 4,
                                 right: 4,
-                                child: IconButton.filled(
+                                child: IconButton.filledTonal(
                                   tooltip: 'Eliminar fotografía',
                                   onPressed: () => _removePhoto(path),
+                                  style: IconButton.styleFrom(
+                                    backgroundColor: Theme.of(context)
+                                        .colorScheme
+                                        .errorContainer,
+                                    foregroundColor: Theme.of(context)
+                                        .colorScheme
+                                        .onErrorContainer,
+                                  ),
                                   icon: const Icon(
                                     Icons.delete_outline,
                                   ),

@@ -1,17 +1,26 @@
-# workspace
+# Portal Taller · Sinergia Siniestros
 
-A new Flutter project.
+Aplicación piloto Flutter para el seguimiento de siniestros y reparaciones por
+parte de asegurados, talleres y consultoría. La identidad visual toma como
+referencia la paleta azul marino, turquesa y coral del sitio de Grupo Sinergia.
 
-## Getting Started
+## Ejecutar
 
-This project is a starting point for a Flutter application.
+Desde este directorio:
 
-A few resources to get you started if this is your first Flutter project:
+```sh
+flutter pub get
+flutter run
+```
 
-- [Learn Flutter](https://docs.flutter.dev/get-started/learn-flutter)
-- [Write your first Flutter app](https://docs.flutter.dev/get-started/codelab)
-- [Flutter learning resources](https://docs.flutter.dev/reference/learning-resources)
+## Validar y compilar
 
-For help getting started with Flutter development, view the
-[online documentation](https://docs.flutter.dev/), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
+```sh
+flutter analyze
+flutter test
+flutter build apk --release
+```
+
+Los estilos globales se centralizan en `lib/theme/app_theme.dart`. Los accesos
+de demostración y los datos de ejemplo se mantienen en el estado y los datos
+locales de la aplicación.

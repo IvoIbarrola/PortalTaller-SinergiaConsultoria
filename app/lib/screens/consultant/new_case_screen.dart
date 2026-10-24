@@ -39,7 +39,6 @@ class _NewCaseScreenState extends State<NewCaseScreen> {
               controller: _claimController,
               decoration: const InputDecoration(
                 labelText: 'Número de siniestro',
-                border: OutlineInputBorder(),
               ),
             ),
             const SizedBox(height: 12),
@@ -48,7 +47,6 @@ class _NewCaseScreenState extends State<NewCaseScreen> {
               maxLines: 4,
               decoration: const InputDecoration(
                 labelText: 'Descripción',
-                border: OutlineInputBorder(),
               ),
             ),
             const SizedBox(height: 12),
@@ -56,7 +54,6 @@ class _NewCaseScreenState extends State<NewCaseScreen> {
               value: _selectedUserId,
               decoration: const InputDecoration(
                 labelText: 'Asegurado',
-                border: OutlineInputBorder(),
               ),
               items: appState.users
                   .where((user) => user.role == UserRole.insured)
@@ -74,7 +71,6 @@ class _NewCaseScreenState extends State<NewCaseScreen> {
               value: _selectedVehicleId,
               decoration: const InputDecoration(
                 labelText: 'Vehículo',
-                border: OutlineInputBorder(),
               ),
               items: appState.vehicles
                   .map(
@@ -91,7 +87,6 @@ class _NewCaseScreenState extends State<NewCaseScreen> {
               value: _selectedWorkshopId,
               decoration: const InputDecoration(
                 labelText: 'Taller asignado (opcional)',
-                border: OutlineInputBorder(),
               ),
               items: [
                 const DropdownMenuItem<String?>(

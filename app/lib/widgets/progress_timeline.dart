@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+import '../theme/app_theme.dart';
+
 class ProgressTimeline extends StatelessWidget {
   final List<String> steps;
   final int currentIndex;
@@ -13,47 +15,63 @@ class ProgressTimeline extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return SizedBox(
-      height: 96,
+      height: 72,
       child: ListView.separated(
         scrollDirection: Axis.horizontal,
         itemCount: steps.length,
-        separatorBuilder: (_, __) => const SizedBox(width: 10),
+        separatorBuilder: (_, __) => const SizedBox(width: 0),
         itemBuilder: (context, index) {
           final active = index <= currentIndex;
           final color = active
-              ? Theme.of(context).colorScheme.primary
-              : Colors.grey.shade300;
+              ? AppTheme.teal
+              : AppTheme.border;
+          final isLast = index == steps.length - 1;
 
           return SizedBox(
-            width: 110,
+            width: isLast ? 88 : 104,
             child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Container(
-                  width: 18,
-                  height: 18,
-                  decoration: BoxDecoration(
-                    shape: BoxShape.circle,
-                    color: color,
-                  ),
+                Row(
+                  children: [
+                    Container(
+                      width: 20,
+                      height: 20,
+                      decoration: BoxDecoration(
+                        shape: BoxShape.circle,
+                        color: active ? AppTheme.tealInk : AppTheme.surface,
+                        border: Border.all(
+                          color: active ? AppTheme.tealInk : AppTheme.border,
+                          width: 2,
+                        ),
+                      ),
+                      child: active
+                          ? const Icon(
+                              Icons.check,
+                              size: 12,
+                              color: Colors.white,
+                            )
+                          : null,
+                    ),
+                    if (!isLast)
+                      Expanded(
+                        child: Container(
+                          height: 2,
+                          color: color,
+                        ),
+                      ),
+                  ],
                 ),
                 const SizedBox(height: 8),
-                Expanded(
-                  child: Text(
-                    steps[index],
-                    textAlign: TextAlign.center,
-                    style: TextStyle(
-                      fontSize: 11,
-                      fontWeight: active ? FontWeight.bold : FontWeight.normal,
-                      color: active ? Colors.black87 : Colors.grey.shade600,
-                    ),
+                Text(
+                  steps[index],
+                  textAlign: TextAlign.left,
+                  style: TextStyle(
+                    fontSize: 11,
+                    fontWeight: active ? FontWeight.w700 : FontWeight.w500,
+                    color: active ? AppTheme.text : AppTheme.mutedText,
                   ),
                 ),
-                if (index < steps.length - 1)
-                  Container(
-                    width: 56,
-                    height: 2,
-                    color: color,
-                  ),
               ],
             ),
           );

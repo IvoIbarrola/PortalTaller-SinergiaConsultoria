@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../models/message.dart';
+import '../theme/app_theme.dart';
 
 class MessageBubble extends StatelessWidget {
   final Message message;
@@ -20,10 +21,10 @@ class MessageBubble extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final textColor = isMine ? Colors.white : Colors.black87;
+    final textColor = isMine ? Colors.white : AppTheme.text;
     final bubbleColor = isMine
         ? Theme.of(context).colorScheme.primary
-        : Colors.grey.shade200;
+        : Theme.of(context).colorScheme.surface;
 
     return Align(
       alignment: isMine ? Alignment.centerRight : Alignment.centerLeft,
@@ -52,7 +53,7 @@ class MessageBubble extends StatelessWidget {
                   message.senderName,
                   style: TextStyle(
                     fontWeight: FontWeight.bold,
-                    color: textColor.withOpacity(0.9),
+                    color: textColor.withValues(alpha: 0.9),
                     fontSize: 12,
                   ),
                 ),
@@ -66,7 +67,7 @@ class MessageBubble extends StatelessWidget {
                 _formatTime(message.createdAt),
                 style: TextStyle(
                   fontSize: 10,
-                  color: textColor.withOpacity(0.7),
+                  color: textColor.withValues(alpha: 0.7),
                 ),
               ),
             ],

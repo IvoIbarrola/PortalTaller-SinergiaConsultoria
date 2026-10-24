@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../../models/user.dart';
 import '../../state/app_state.dart';
+import '../../theme/app_theme.dart';
 import '../consultant/consultant_home_screen.dart';
 import '../insured/insured_home_screen.dart';
 import '../workshop/workshop_home_screen.dart';
@@ -101,108 +102,148 @@ class _LoginScreenState extends State<LoginScreen> {
     final theme = Theme.of(context);
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Portal Taller'), centerTitle: true),
       body: SafeArea(
         child: Center(
           child: SingleChildScrollView(
             padding: const EdgeInsets.all(24),
             child: ConstrainedBox(
-              constraints: const BoxConstraints(maxWidth: 420),
+              constraints: const BoxConstraints(maxWidth: 440),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
-                  Icon(
-                    Icons.car_repair_rounded,
-                    size: 64,
-                    color: theme.colorScheme.primary,
+                  Container(
+                    width: 68,
+                    height: 68,
+                    alignment: Alignment.center,
+                    decoration: BoxDecoration(
+                      color: theme.colorScheme.primary,
+                      borderRadius: BorderRadius.circular(16),
+                    ),
+                    child: const Icon(
+                      Icons.car_repair_rounded,
+                      size: 36,
+                      color: Colors.white,
+                    ),
                   ),
-                  const SizedBox(height: 24),
+                  const SizedBox(height: 20),
                   Text(
-                    'Ingresá a tu portal',
-                    textAlign: TextAlign.center,
-                    style: theme.textTheme.headlineSmall?.copyWith(
-                      fontWeight: FontWeight.bold,
+                    'SINERGIA · GESTIÓN DE SINIESTROS',
+                    style: theme.textTheme.labelMedium?.copyWith(
+                      color: AppTheme.tealInk,
+                      fontWeight: FontWeight.w800,
+                      letterSpacing: 1.1,
                     ),
                   ),
                   const SizedBox(height: 8),
                   Text(
+                    'Portal Taller',
+                    style: theme.textTheme.headlineMedium?.copyWith(
+                      fontWeight: FontWeight.w800,
+                    ),
+                  ),
+                  Text(
                     _showPassword
                         ? 'Ingresá la contraseña para continuar.'
-                        : 'Ingresá tu código de siniestro o código de acceso.',
-                    textAlign: TextAlign.center,
-                    style: theme.textTheme.bodyMedium,
-                  ),
-                  const SizedBox(height: 32),
-                  TextField(
-                    controller: _codeController,
-                    textCapitalization: TextCapitalization.characters,
-                    autocorrect: false,
-                    enabled: !_showPassword,
-                    textInputAction: _showPassword
-                        ? TextInputAction.next
-                        : TextInputAction.done,
-                    onChanged: (_) {
-                      setState(() {
-                        _errorMessage = null;
-                      });
-                    },
-                    onSubmitted: (_) => _submit(),
-                    decoration: const InputDecoration(
-                      labelText: 'Código',
-                      hintText: 'Ingresá tu código',
-                      prefixIcon: Icon(Icons.confirmation_number_outlined),
-                      border: OutlineInputBorder(),
+                        : 'Seguí el estado de tu siniestro o ingresá a las herramientas de gestión.',
+                    style: theme.textTheme.bodyLarge?.copyWith(
+                      color: theme.colorScheme.onSurfaceVariant,
                     ),
                   ),
-                  if (_showPassword) ...[
-                    const SizedBox(height: 16),
-                    TextField(
-                      controller: _passwordController,
-                      obscureText: true,
-                      textInputAction: TextInputAction.done,
-                      onChanged: (_) {
-                        if (_errorMessage != null) {
-                          setState(() {
-                            _errorMessage = null;
-                          });
-                        }
-                      },
-                      onSubmitted: (_) => _submit(),
-                      decoration: const InputDecoration(
-                        labelText: 'Contraseña',
-                        prefixIcon: Icon(Icons.lock_outline),
-                        border: OutlineInputBorder(),
+                  const SizedBox(height: 28),
+                  Card(
+                    child: Padding(
+                      padding: const EdgeInsets.all(20),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.stretch,
+                        children: [
+                          Text(
+                            _showPassword ? 'Acceso profesional' : 'Ingresar',
+                            style: theme.textTheme.titleLarge?.copyWith(
+                              fontWeight: FontWeight.w700,
+                            ),
+                          ),
+                          const SizedBox(height: 6),
+                          Text(
+                            _showPassword
+                                ? 'Completá tus datos de acceso.'
+                                : 'Usá tu código de siniestro o código de acceso.',
+                            style: theme.textTheme.bodyMedium?.copyWith(
+                              color: theme.colorScheme.onSurfaceVariant,
+                            ),
+                          ),
+                          const SizedBox(height: 20),
+                          TextField(
+                            controller: _codeController,
+                            textCapitalization: TextCapitalization.characters,
+                            autocorrect: false,
+                            enabled: !_showPassword,
+                            textInputAction: _showPassword
+                                ? TextInputAction.next
+                                : TextInputAction.done,
+                            onChanged: (_) {
+                              setState(() {
+                                _errorMessage = null;
+                              });
+                            },
+                            onSubmitted: (_) => _submit(),
+                            decoration: const InputDecoration(
+                              labelText: 'Código',
+                              hintText: 'Ingresá tu código',
+                              prefixIcon:
+                                  Icon(Icons.confirmation_number_outlined),
+                            ),
+                          ),
+                          if (_showPassword) ...[
+                            const SizedBox(height: 14),
+                            TextField(
+                              controller: _passwordController,
+                              obscureText: true,
+                              textInputAction: TextInputAction.done,
+                              onChanged: (_) {
+                                if (_errorMessage != null) {
+                                  setState(() {
+                                    _errorMessage = null;
+                                  });
+                                }
+                              },
+                              onSubmitted: (_) => _submit(),
+                              decoration: const InputDecoration(
+                                labelText: 'Contraseña',
+                                prefixIcon: Icon(Icons.lock_outline),
+                              ),
+                            ),
+                          ],
+                          if (_errorMessage != null) ...[
+                            const SizedBox(height: 12),
+                            Text(
+                              _errorMessage!,
+                              style: TextStyle(color: theme.colorScheme.error),
+                            ),
+                          ],
+                          const SizedBox(height: 20),
+                          FilledButton(
+                            onPressed: _submit,
+                            child: Text(
+                              _showPassword ? 'Ingresar' : 'Continuar',
+                            ),
+                          ),
+                          if (_showPassword) ...[
+                            const SizedBox(height: 4),
+                            TextButton(
+                              onPressed: () {
+                                setState(() {
+                                  _showPassword = false;
+                                  _passwordController.clear();
+                                  _errorMessage = null;
+                                });
+                              },
+                              child: const Text('Volver'),
+                            ),
+                          ],
+                        ],
                       ),
                     ),
-                  ],
-                  if (_errorMessage != null) ...[
-                    const SizedBox(height: 12),
-                    Text(
-                      _errorMessage!,
-                      style: TextStyle(color: theme.colorScheme.error),
-                    ),
-                  ],
-                  const SizedBox(height: 24),
-                  FilledButton(
-                    onPressed: _submit,
-                    child: Padding(
-                      padding: const EdgeInsets.symmetric(vertical: 14),
-                      child: Text(_showPassword ? 'Ingresar' : 'Continuar'),
-                    ),
                   ),
-                  if (_showPassword) ...[
-                    const SizedBox(height: 8),
-                    TextButton(
-                      onPressed: () {
-                        setState(() {
-                          _showPassword = false;
-                          _passwordController.clear();
-                          _errorMessage = null;
-                        });
-                      },
-                      child: const Text('Volver'),
-                    ),
-                  ],
                 ],
               ),
             ),

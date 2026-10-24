@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import 'screens/login/login_screen.dart';
+import 'theme/app_theme.dart';
 
 void main() {
   runApp(const PortalTallerApp());
@@ -18,13 +19,7 @@ class PortalTallerApp extends StatelessWidget {
     return MaterialApp(
       title: 'Portal Taller',
       debugShowCheckedModeBanner: false,
-      theme: ThemeData(
-        useMaterial3: true,
-        colorScheme: ColorScheme.fromSeed(
-          seedColor: Colors.blue,
-        ),
-        scaffoldBackgroundColor: const Color(0xFFF7F8FA),
-      ),
+      theme: AppTheme.light,
       home: const LoginScreen(),
     );
   }

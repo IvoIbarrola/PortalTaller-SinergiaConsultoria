@@ -43,18 +43,24 @@ class ConsultantHomeScreen extends StatelessWidget {
         ],
       ),
       body: Padding(
-        padding: const EdgeInsets.all(16),
+        padding: const EdgeInsets.fromLTRB(20, 12, 20, 16),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Text(
-              'Casos activos',
-              style: TextStyle(
-                fontSize: 24,
-                fontWeight: FontWeight.bold,
-              ),
+            Text(
+              'Seguimiento de siniestros',
+              style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+                    fontWeight: FontWeight.w800,
+                  ),
             ),
-            const SizedBox(height: 16),
+            const SizedBox(height: 5),
+            Text(
+              '${cases.length} casos en la red',
+              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                    color: Theme.of(context).colorScheme.onSurfaceVariant,
+                  ),
+            ),
+            const SizedBox(height: 20),
             Row(
               children: [
                 Expanded(
@@ -71,7 +77,7 @@ class ConsultantHomeScreen extends StatelessWidget {
                     label: const Text('Nuevo caso'),
                   ),
                 ),
-                const SizedBox(width: 12),
+                const SizedBox(width: 10),
                 Expanded(
                   child: OutlinedButton.icon(
                     onPressed: () {
@@ -82,37 +88,41 @@ class ConsultantHomeScreen extends StatelessWidget {
                         ),
                       );
                     },
-                    icon: const Icon(Icons.list),
+                    icon: const Icon(Icons.list_alt),
                     label: const Text('Todos'),
                   ),
                 ),
               ],
             ),
-            const SizedBox(height: 16),
+            const SizedBox(height: 20),
             Expanded(
-              child: ListView.builder(
-                itemCount: cases.length,
-                itemBuilder: (context, index) {
-                  final repairCase = cases[index];
-                  final vehicle = appState.getVehicleById(repairCase.vehicleId);
-                  if (vehicle == null) {
-                    return const SizedBox.shrink();
-                  }
+              child: cases.isEmpty
+                  ? const Center(child: Text('Todavía no hay casos registrados.'))
+                  : ListView.builder(
+                      itemCount: cases.length,
+                      itemBuilder: (context, index) {
+                        final repairCase = cases[index];
+                        final vehicle =
+                            appState.getVehicleById(repairCase.vehicleId);
+                        if (vehicle == null) {
+                          return const SizedBox.shrink();
+                        }
 
-                  return RepairCaseCard(
-                    repairCase: repairCase,
-                    vehicle: vehicle,
-                    onTap: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (_) => CaseDetailScreen(caseId: repairCase.id),
-                        ),
-                      );
-                    },
-                  );
-                },
-              ),
+                        return RepairCaseCard(
+                          repairCase: repairCase,
+                          vehicle: vehicle,
+                          onTap: () {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (_) =>
+                                    CaseDetailScreen(caseId: repairCase.id),
+                              ),
+                            );
+                          },
+                        );
+                      },
+                    ),
             ),
           ],
         ),

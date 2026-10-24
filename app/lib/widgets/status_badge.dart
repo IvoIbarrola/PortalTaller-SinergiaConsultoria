@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+import '../theme/app_theme.dart';
+
 class StatusBadge extends StatelessWidget {
   final String status;
 
@@ -11,15 +13,26 @@ class StatusBadge extends StatelessWidget {
   Color _getColor() {
     switch (status.toLowerCase()) {
       case 'finalizado':
-        return Colors.green;
+      case 'entregado':
+      case 'listo para entregar':
+        return AppTheme.success;
       case 'en reparación':
-        return Colors.blue;
+      case 'inspección':
+      case 'control de calidad':
+        return AppTheme.tealInk;
       case 'en espera de repuestos':
-        return Colors.orange;
+      case 'esperando repuestos':
+      case 'aprobación':
+        return AppTheme.warning;
       case 'pendiente':
-        return Colors.grey;
+      case 'nuevo':
+      case 'en revisión':
+      case 'presupuesto':
+      case 'taller asignado':
+      case 'recibido':
+        return AppTheme.mutedText;
       default:
-        return Colors.blueGrey;
+        return AppTheme.attention;
     }
   }
 
@@ -28,20 +41,17 @@ class StatusBadge extends StatelessWidget {
     final color = _getColor();
 
     return Container(
-      padding: const EdgeInsets.symmetric(
-        horizontal: 10,
-        vertical: 5,
-      ),
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
       decoration: BoxDecoration(
-        color: color.withOpacity(0.12),
-        borderRadius: BorderRadius.circular(20),
+        color: color.withValues(alpha: 0.11),
+        borderRadius: BorderRadius.circular(7),
       ),
       child: Text(
         status,
         style: TextStyle(
           color: color,
           fontSize: 12,
-          fontWeight: FontWeight.w600,
+          fontWeight: FontWeight.w700,
         ),
       ),
     );

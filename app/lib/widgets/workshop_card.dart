@@ -19,15 +19,21 @@ class WorkshopCard extends StatelessWidget {
     return Card(
       color: selected ? Theme.of(context).colorScheme.primaryContainer : null,
       child: ListTile(
-        leading: const CircleAvatar(
-          child: Icon(Icons.build),
+        leading: CircleAvatar(
+          backgroundColor: Theme.of(context).colorScheme.secondaryContainer,
+          foregroundColor: Theme.of(context).colorScheme.primary,
+          child: const Icon(Icons.handyman_outlined),
         ),
         title: Text(workshop.name),
         subtitle: Text('${workshop.city} • ${workshop.phone}'),
         trailing: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
-            const Icon(Icons.star, size: 16, color: Colors.amber),
+            Icon(
+              Icons.star,
+              size: 16,
+              color: Theme.of(context).colorScheme.tertiary,
+            ),
             Text(workshop.rating.toStringAsFixed(1)),
           ],
         ),

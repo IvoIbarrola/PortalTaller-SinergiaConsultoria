@@ -36,15 +36,13 @@ class RepairCaseCard extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   Expanded(
                     child: Text(
                       repairCase.claimNumber,
-                      style: const TextStyle(
-                        fontWeight: FontWeight.bold,
-                        fontSize: 16,
-                      ),
+                      style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                            fontWeight: FontWeight.w700,
+                          ),
                     ),
                   ),
                   StatusBadge(status: repairCase.status.label),
@@ -53,29 +51,44 @@ class RepairCaseCard extends StatelessWidget {
               const SizedBox(height: 8),
               Text(
                 vehicle.displayName,
-                style: TextStyle(
-                  color: Colors.grey.shade800,
-                  fontWeight: FontWeight.w600,
-                ),
+                style: Theme.of(context).textTheme.bodyLarge?.copyWith(
+                      color: Theme.of(context).colorScheme.onSurface,
+                      fontWeight: FontWeight.w600,
+                    ),
               ),
               const SizedBox(height: 6),
-              Text(repairCase.description),
-              const SizedBox(height: 10),
-              LinearProgressIndicator(
-                value: (repairCase.progress / 100).clamp(0.0, 1.0),
+              Text(
+                repairCase.description,
+                style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                      color: Theme.of(context).colorScheme.onSurfaceVariant,
+                    ),
               ),
-              const SizedBox(height: 8),
+              const SizedBox(height: 14),
+              ClipRRect(
+                borderRadius: BorderRadius.circular(4),
+                child: LinearProgressIndicator(
+                  minHeight: 6,
+                  value: (repairCase.progress / 100).clamp(0.0, 1.0),
+                ),
+              ),
+              const SizedBox(height: 9),
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  Text('${repairCase.progress}% completado'),
+                  Text(
+                    '${repairCase.progress}% completado',
+                    style: Theme.of(context).textTheme.labelMedium?.copyWith(
+                          color: Theme.of(context).colorScheme.onSurfaceVariant,
+                          fontWeight: FontWeight.w600,
+                        ),
+                  ),
                   if (repairCase.estimatedDeliveryDate != null)
                     Text(
                       'Entrega: ${_formatDate(repairCase.estimatedDeliveryDate!)}',
-                      style: TextStyle(
-                        color: Colors.grey.shade700,
-                        fontSize: 12,
-                      ),
+                      style: Theme.of(context).textTheme.labelMedium?.copyWith(
+                            color:
+                                Theme.of(context).colorScheme.onSurfaceVariant,
+                          ),
                     ),
                 ],
               ),
