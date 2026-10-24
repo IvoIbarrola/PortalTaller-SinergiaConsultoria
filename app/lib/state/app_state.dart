@@ -254,4 +254,36 @@ class AppState extends ChangeNotifier {
 
     notifyListeners();
   }
+  // Fotografías organizadas por identificador de siniestro.
+final Map<String, List<String>> _photosByCase = {};
+
+List<String> photosForCase(String caseId) {
+  return List.unmodifiable(
+    _photosByCase[caseId] ?? const <String>[],
+  );
+}
+
+void addPhotoToCase(String caseId, String photoPath) {
+  final photos = _photosByCase.putIfAbsent(
+    caseId,
+    () => <String>[],
+  );
+
+  photos.add(photoPath);
+  notifyListeners();
+}
+
+void removePhotoFromCase(String caseId, String photoPath) {
+  final photos = _photosByCase[caseId];
+
+  if (photos == null) return;
+
+  photos.remove(photoPath);
+
+  if (photos.isEmpty) {
+    _photosByCase.remove(caseId);
+  }
+
+  notifyListeners();
+}
 }
