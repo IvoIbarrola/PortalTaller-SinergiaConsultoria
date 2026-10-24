@@ -1,9 +1,13 @@
 import 'package:flutter/material.dart';
 
+import 'data/supabase_config.dart';
+
 import 'screens/login/login_screen.dart';
 import 'theme/app_theme.dart';
 
-void main() {
+Future<void> main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  await SupabaseConfig.initialize();
   runApp(const PortalTallerApp());
 }
 
