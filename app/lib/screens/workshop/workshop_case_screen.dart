@@ -102,6 +102,28 @@ class _WorkshopCaseScreenState extends State<WorkshopCaseScreen> {
             ),
           ),
           const SizedBox(height: 16),
+          Card(
+            child: Padding(
+              padding: const EdgeInsets.all(16),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text('DATOS DEL SINIESTRO', style: Theme.of(context).textTheme.labelLarge?.copyWith(fontWeight: FontWeight.w800, color: AppTheme.tealInk)),
+                  const SizedBox(height: 8),
+                  if (repairCase.fastTrack) const Chip(avatar: Icon(Icons.bolt, size: 18), label: Text('Fast track')),
+                  Text('Compañía: ${repairCase.insurerCompany.isEmpty ? 'Sin dato' : repairCase.insurerCompany}'),
+                  Text('Ramo: ${repairCase.claimBranch}'),
+                  Text('Tipo: ${repairCase.claimType.isEmpty ? 'Sin dato' : repairCase.claimType}'),
+                  Text('N.º de compañía: ${repairCase.companyClaimNumber.isEmpty ? 'Sin completar' : repairCase.companyClaimNumber}'),
+                  Text('Patente: ${vehicle.plate}'),
+                  Text('Conductor: ${repairCase.driver.isEmpty ? 'Sin dato' : repairCase.driver}'),
+                  Text('Ubicación: ${repairCase.incidentLocation.isEmpty ? 'Sin dato' : repairCase.incidentLocation}'),
+                  Text('Origen: ${repairCase.origin}'),
+                ],
+              ),
+            ),
+          ),
+          const SizedBox(height: 16),
           DropdownButtonFormField<RepairCaseStatus>(
             value: repairCase.status,
             decoration: const InputDecoration(
