@@ -84,7 +84,7 @@ class _CaseDetailScreenState extends State<CaseDetailScreen> {
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               Text(
-                'Detalle del caso',
+                'Ficha de siniestro',
                 style: Theme.of(context).textTheme.titleLarge?.copyWith(
                       fontWeight: FontWeight.w700,
                     ),
@@ -187,6 +187,27 @@ class _CaseDetailScreenState extends State<CaseDetailScreen> {
                   _detailRow('Ubicación', repairCase.incidentLocation),
                   _detailRow('Terceros', repairCase.hasThirdParties ? 'Sí' : 'No'),
                   _detailRow('Adjunto', repairCase.attachmentFilename),
+                ],
+              ),
+            ),
+          ),
+          Card(
+            child: Padding(
+              padding: const EdgeInsets.all(16),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text('RESUMEN',
+                      style: Theme.of(context).textTheme.labelLarge?.copyWith(
+                            fontWeight: FontWeight.w800,
+                            color: AppTheme.tealInk,
+                          )),
+                  const SizedBox(height: 8),
+                  _detailRow('Días en gestión', '${DateTime.now().difference(repairCase.entryDate).inDays} días'),
+                  _detailRow('Ingresado', _formatDate(repairCase.entryDate)),
+                  _detailRow('Origen', repairCase.origin),
+                  _detailRow('Terceros', repairCase.hasThirdParties ? 'Sí' : 'No'),
+                  _detailRow('Responsable', repairCase.responsible.isEmpty ? 'Sin asignar' : repairCase.responsible),
                 ],
               ),
             ),
