@@ -256,6 +256,59 @@ class AppState extends ChangeNotifier {
     notifyListeners();
   }
 
+  Future<void> createCase({
+    required String insuredUserId,
+    required String vehicleId,
+    required String claimNumber,
+    required String description,
+    String? workshopId,
+  }) async {
+    await _client.from('repair_cases').insert({
+      'vehicle_id': vehicleId,
+      'insured_user_id': insuredUserId,
+      'claim_number': claimNumber,
+      'description': description,
+      'status': workshopId == null ? RepairCaseStatus.newCase.name : RepairCaseStatus.workshopAssigned.name,
+      'entry_date': DateTime.now().toUtc().toIso8601String(),
+      'estimated_delivery_date': DateTime.now().add(const Duration(days: 12)).toUtc().toIso8601String(),
+      'progress': 0,
+      'workshop_id': workshopId,
+    });
+    await refreshData();
+  }
+
+  Future<void> assignWorkshop(String caseId, String workshopId) async {
+    await _client.from('repair_cases').update({
+      'workshop_id': workshopId,
+      'status': RepairCaseStatus.workshopAssigned.name,
+    }).eq('id', caseId);
+    await refreshData();
+  }
+
+  Future<void> updateProgress(String caseId, int progress) async {
+    await _client.from('repair_cases').update({
+      'progress': progress.clamp(0, 100),
+    }).eq('id', caseId);
+    await refreshData();
+  }
+
+  final Map<String, List<String>> _photosByCase = {};
+
+  List<String> photosForCase(String caseId) =>
+      List.unmodifiable(_photosByCase[caseId] ?? const <String>[]);
+
+  Future<void> addPhotoToCase(String caseId, String photoPath) async {
+    throw UnsupportedError(
+      'La carga de fotos requiere integrar Storage y las políticas de acceso antes de habilitarla.',
+    );
+  }
+
+  Future<void> removePhotoFromCase(String caseId, String photoPath) async {
+    throw UnsupportedError(
+      'La eliminación de fotos requiere integrar Storage y las políticas de acceso antes de habilitarla.',
+    );
+  }
+
   // Las mutaciones se habilitarán junto con sus políticas RLS específicas.
   Future<void> updateCaseStatus(String caseId, RepairCaseStatus status) async {
     await _client.from('repair_cases').update({'status': status.name}).eq('id', caseId);
