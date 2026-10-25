@@ -112,9 +112,7 @@ class _LoginScreenState extends State<LoginScreen> {
                     ),
                   ),
                   Text(
-                    _showPassword
-                        ? 'Ingresá la contraseña para continuar.'
-                        : 'Seguí el estado de tu siniestro o ingresá a las herramientas de gestión.',
+                    'Ingresá con una cuenta habilitada para consultar los datos de Supabase.',
                     style: theme.textTheme.bodyLarge?.copyWith(
                       color: theme.colorScheme.onSurfaceVariant,
                     ),
@@ -134,9 +132,7 @@ class _LoginScreenState extends State<LoginScreen> {
                           ),
                           const SizedBox(height: 6),
                           Text(
-                            _showPassword
-                                ? 'Completá tus datos de acceso.'
-                                : 'Usá tu código de siniestro o código de acceso.',
+                            'Usá el email y la contraseña de tu cuenta.',
                             style: theme.textTheme.bodyMedium?.copyWith(
                               color: theme.colorScheme.onSurfaceVariant,
                             ),
@@ -157,19 +153,6 @@ class _LoginScreenState extends State<LoginScreen> {
                             onSubmitted: (_) => _submit(),
                             decoration: const InputDecoration(labelText: 'Contraseña', prefixIcon: Icon(Icons.lock_outline)),
                           ),
-                          if (_errorMessage != null) {
-                                  setState(() {
-                                    _errorMessage = null;
-                                  });
-                                }
-                              },
-                              onSubmitted: (_) => _submit(),
-                              decoration: const InputDecoration(
-                                labelText: 'Contraseña',
-                                prefixIcon: Icon(Icons.lock_outline),
-                              ),
-                            ),
-                          ],
                           if (_errorMessage != null) ...[
                             const SizedBox(height: 12),
                             Text(
