@@ -69,6 +69,7 @@ class _LoginScreenState extends State<LoginScreen> {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final configured = AppState().isSupabaseConfigured;
 
     return Scaffold(
       body: SafeArea(
@@ -126,7 +127,7 @@ class _LoginScreenState extends State<LoginScreen> {
                         crossAxisAlignment: CrossAxisAlignment.stretch,
                         children: [
                           Text(
-                            _showPassword ? 'Acceso profesional' : 'Ingresar',
+                            'Iniciar sesión',
                             style: theme.textTheme.titleLarge?.copyWith(
                               fontWeight: FontWeight.w700,
                             ),
@@ -142,34 +143,21 @@ class _LoginScreenState extends State<LoginScreen> {
                           ),
                           const SizedBox(height: 20),
                           TextField(
-                            controller: _codeController,
-                            textCapitalization: TextCapitalization.characters,
+                            controller: _emailController,
+                            keyboardType: TextInputType.emailAddress,
                             autocorrect: false,
-                            enabled: !_showPassword,
-                            textInputAction: _showPassword
-                                ? TextInputAction.next
-                                : TextInputAction.done,
-                            onChanged: (_) {
-                              setState(() {
-                                _errorMessage = null;
-                              });
-                            },
-                            onSubmitted: (_) => _submit(),
-                            decoration: const InputDecoration(
-                              labelText: 'Código',
-                              hintText: 'Ingresá tu código',
-                              prefixIcon:
-                                  Icon(Icons.confirmation_number_outlined),
-                            ),
+                            textInputAction: TextInputAction.next,
+                            decoration: const InputDecoration(labelText: 'Email', prefixIcon: Icon(Icons.alternate_email)),
                           ),
-                          if (_showPassword) ...[
-                            const SizedBox(height: 14),
-                            TextField(
-                              controller: _passwordController,
-                              obscureText: true,
-                              textInputAction: TextInputAction.done,
-                              onChanged: (_) {
-                                if (_errorMessage != null) {
+                          const SizedBox(height: 14),
+                          TextField(
+                            controller: _passwordController,
+                            obscureText: true,
+                            textInputAction: TextInputAction.done,
+                            onSubmitted: (_) => _submit(),
+                            decoration: const InputDecoration(labelText: 'Contraseña', prefixIcon: Icon(Icons.lock_outline)),
+                          ),
+                          if (_errorMessage != null) {
                                   setState(() {
                                     _errorMessage = null;
                                   });
@@ -190,25 +178,15 @@ class _LoginScreenState extends State<LoginScreen> {
                             ),
                           ],
                           const SizedBox(height: 20),
-                          FilledButton(
-                            onPressed: _submit,
-                            child: Text(
-                              _showPassword ? 'Ingresar' : 'Continuar',
-                            ),
-                          ),
-                          if (_showPassword) ...[
-                            const SizedBox(height: 4),
-                            TextButton(
-                              onPressed: () {
-                                setState(() {
-                                  _showPassword = false;
-                                  _passwordController.clear();
-                                  _errorMessage = null;
-                                });
-                              },
-                              child: const Text('Volver'),
-                            ),
+                          if (!configured) ...[
+                            const SizedBox(height: 12),
+                            Text('Supabase no está configurado. Definí SUPABASE_URL y SUPABASE_ANON_KEY.', style: TextStyle(color: theme.colorScheme.error)),
                           ],
+                          FilledButton(
+                            onPressed: _busy || !configured ? null : _submit,
+                            child: _busy ? const SizedBox(width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2)) : const Text('Conectar y cargar datos'),
+                          ),
+
                         ],
                       ),
                     ),
