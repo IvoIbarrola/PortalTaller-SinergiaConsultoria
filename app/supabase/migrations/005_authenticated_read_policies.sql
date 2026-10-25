@@ -79,3 +79,6 @@ create policy case_attachments_select_visible_case on public.case_attachments
 for select to authenticated using (
   exists (select 1 from public.repair_cases rc where rc.id = case_attachments.case_id)
 );
+
+-- Keep the pre-existing SECURITY DEFINER event-trigger function unavailable to API roles.
+revoke all on function public.rls_auto_enable() from public, anon, authenticated;
