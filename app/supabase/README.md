@@ -5,13 +5,15 @@
 - Esquema inicial: `supabase/migrations/001_initial_schema.sql`
 - Cliente Flutter opcional: `lib/data/supabase_config.dart`
 - `main.dart` inicializa Supabase cuando se proporcionan las variables de compilación.
-- Si no se configuran las credenciales, la app sigue iniciando en modo demo/local.
+- Si no se configuran las credenciales, la app muestra un aviso y no usa datos de demostración.
+- `AppState` consulta perfiles, siniestros, vehículos, talleres y mensajes desde Supabase.
+- La pantalla de ingreso usa Supabase Auth (email y contraseña).
 
 ## Configurar el proyecto
 
 1. Crear un proyecto en https://supabase.com/.
 2. En el panel del proyecto, abrir **SQL Editor**.
-3. Copiar y ejecutar el contenido de `app/supabase/migrations/001_initial_schema.sql`.
+3. Aplicar las migraciones en orden: `001_initial_schema.sql`, `002_seed_demo_data.sql`, `003_claim_management_demo_data.sql`, `004_seed_claim_management_examples.sql` y `005_authenticated_read_policies.sql`. Las migraciones `002` y `004` cargan ejemplos ficticios.
 4. En **Project Settings / API** (o **Connect**, según la interfaz), obtener la Project URL y la clave pública **anon/publishable**.
 5. No usar ni incluir nunca la clave `service_role` en Flutter ni en el repositorio.
 
@@ -36,7 +38,7 @@ Reemplazar los valores de ejemplo por los de tu proyecto. No subir credenciales 
 
 ## Tablas incluidas
 
-- `profiles`: perfiles y roles de la aplicación; preparado para vincularse a Supabase Auth en una etapa posterior.
+- `profiles`: perfiles y roles de la aplicación, vinculados mediante `auth_user_id` a Supabase Auth.
 - `workshops`: datos de talleres.
 - `vehicles`: vehículos.
 - `repair_cases`: siniestros, estado, progreso y taller asignado.
