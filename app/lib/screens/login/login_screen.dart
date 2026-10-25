@@ -15,65 +15,34 @@ class LoginScreen extends StatefulWidget {
 }
 
 class _LoginScreenState extends State<LoginScreen> {
-  final _codeController = TextEditingController();
+  final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
-
-  bool _showPassword = false;
+  bool _busy = false;
   String? _errorMessage;
 
   @override
   void dispose() {
-    _codeController.dispose();
+    _emailController.dispose();
     _passwordController.dispose();
     super.dispose();
   }
 
-  void _submit() {
+  Future<void> _submit() async {
+    final email = _emailController.text.trim();
+    final password = _passwordController.text;
+    if (email.isEmpty || password.isEmpty) {
+      setState(() => _errorMessage = 'Ingresá email y contraseña.');
+      return;
+    }
+    setState(() { _busy = true; _errorMessage = null; });
     final appState = AppState();
-    final code = _codeController.text.trim();
-
-    if (code.isEmpty) {
-      setState(() {
-        _errorMessage = 'Ingresá un código para continuar.';
-      });
-      return;
-    }
-
-    if (_showPassword) {
-      final user = appState.loginWithSpecialAccess(
-        code,
-        _passwordController.text,
-      );
-
-      if (user == null) {
-        setState(() {
-          _errorMessage = 'La contraseña ingresada es incorrecta.';
-        });
-        return;
-      }
-
-      _openHome(user);
-      return;
-    }
-
-    final insuredUser = appState.loginWithClaimCode(code);
-
-    if (insuredUser != null) {
-      _openHome(insuredUser);
-      return;
-    }
-
-    if (appState.isSpecialAccessCode(code)) {
-      setState(() {
-        _showPassword = true;
-        _errorMessage = null;
-      });
-      return;
-    }
-
+    final user = await appState.signIn(email, password);
+    if (!mounted) return;
     setState(() {
-      _errorMessage = 'El código ingresado no es válido.';
+      _busy = false;
+      _errorMessage = user == null ? appState.lastError ?? 'No se pudo iniciar sesión.' : null;
     });
+    if (user != null) _openHome(user);
   }
 
   void _openHome(User user) {
