@@ -33,7 +33,8 @@ class AppState extends ChangeNotifier {
 
     return normalizedCode == 'SINERGIA-2026' ||
         normalizedCode == 'TALLER-NORTE-2026' ||
-        normalizedCode == 'TALLER-CENTRAL-2026';
+        normalizedCode == 'TALLER-CENTRAL-2026' ||
+        normalizedCode == 'TALLER-SUR-2026';
   }
 
   User? loginWithClaimCode(String code) {
@@ -62,11 +63,13 @@ class AppState extends ChangeNotifier {
     String? userId;
 
     if (normalizedCode == 'SINERGIA-2026') {
-      userId = 'user-consultant';
+      userId = 'consultant-demo-1';
     } else if (normalizedCode == 'TALLER-NORTE-2026') {
-      userId = 'workshop-1-user';
+      userId = 'workshop-demo-user-1';
     } else if (normalizedCode == 'TALLER-CENTRAL-2026') {
-      userId = 'workshop-2-user';
+      userId = 'workshop-demo-user-2';
+    } else if (normalizedCode == 'TALLER-SUR-2026') {
+      userId = 'workshop-demo-user-3';
     } else {
       return null;
     }
