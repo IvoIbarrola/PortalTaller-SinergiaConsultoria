@@ -198,6 +198,13 @@ class AppState extends ChangeNotifier {
     createdAt: DateTime.parse(row['created_at'].toString()).toLocal(),
   );
 
+  // Compatibilidad temporal con la pantalla de acceso anterior.
+  // Estos métodos no autentican usuarios ni usan datos locales; la pantalla
+  // debe migrarse a signIn(email, password) para completar el flujo Supabase.
+  bool isSpecialAccessCode(String code) => false;
+  User? loginWithClaimCode(String code) => null;
+  User? loginWithSpecialAccess(String code, String password) => null;
+
   List<RepairCase> get allCases => List.unmodifiable(repairCases);
 
   List<RepairCase> get casesForCurrentUser {
