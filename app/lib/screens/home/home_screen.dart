@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 
-import '../../data/mock_data.dart';
 import '../../models/repair_case.dart';
+import '../../state/app_state.dart';
 import '../../widgets/status_badge.dart';
 import '../vehicles/vehicles_screen.dart';
 
@@ -10,14 +10,13 @@ class HomeScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final activeCases = mockRepairCases
+    final appState = AppState();
+    final activeCases = appState.casesForCurrentUser
         .where((repairCase) => repairCase.status != RepairCaseStatus.delivered)
         .toList();
 
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Portal Taller'),
-      ),
+      appBar: AppBar(title: const Text('Portal Taller')),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(16),
         child: Column(
@@ -25,9 +24,8 @@ class HomeScreen extends StatelessWidget {
           children: [
             Text(
               'Bienvenido',
-              style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                    fontWeight: FontWeight.bold,
-                  ),
+              style: Theme.of(context).textTheme.headlineSmall
+                  ?.copyWith(fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 8),
             Text(
@@ -43,10 +41,7 @@ class HomeScreen extends StatelessWidget {
                   children: [
                     CircleAvatar(
                       radius: 28,
-                      child: Icon(
-                        Icons.car_repair,
-                        size: 28,
-                      ),
+                      child: Icon(Icons.car_repair, size: 28),
                     ),
                     const SizedBox(width: 16),
                     Expanded(
@@ -55,17 +50,11 @@ class HomeScreen extends StatelessWidget {
                         children: [
                           Text(
                             'Reparaciones activas',
-                            style: Theme.of(context)
-                                .textTheme
-                                .titleMedium
-                                ?.copyWith(
-                                  fontWeight: FontWeight.bold,
-                                ),
+                            style: Theme.of(context).textTheme.titleMedium
+                                ?.copyWith(fontWeight: FontWeight.bold),
                           ),
                           const SizedBox(height: 4),
-                          Text(
-                            '${activeCases.length} vehículos en proceso',
-                          ),
+                          Text('${activeCases.length} vehículos en proceso'),
                         ],
                       ),
                     ),
@@ -81,20 +70,14 @@ class HomeScreen extends StatelessWidget {
               children: [
                 Text(
                   'Últimas reparaciones',
-                  style: Theme.of(context)
-                      .textTheme
-                      .titleLarge
-                      ?.copyWith(
-                        fontWeight: FontWeight.bold,
-                      ),
+                  style: Theme.of(context).textTheme.titleLarge
+                      ?.copyWith(fontWeight: FontWeight.bold),
                 ),
                 TextButton(
                   onPressed: () {
                     Navigator.push(
                       context,
-                      MaterialPageRoute(
-                        builder: (_) => const VehiclesScreen(),
-                      ),
+                      MaterialPageRoute(builder: (_) => const VehiclesScreen()),
                     );
                   },
                   child: const Text('Ver todas'),
@@ -104,56 +87,46 @@ class HomeScreen extends StatelessWidget {
 
             const SizedBox(height: 12),
 
-            ...activeCases.map(
-              (repairCase) {
-                final vehicle = mockVehicles.firstWhere(
-                  (vehicle) => vehicle.id == repairCase.vehicleId,
-                );
+            ...activeCases.map((repairCase) {
+              final vehicle = appState.getVehicleById(repairCase.vehicleId);
+              if (vehicle == null) return const SizedBox.shrink();
 
-                return Card(
-                  margin: const EdgeInsets.only(bottom: 12),
-                  child: Padding(
-                    padding: const EdgeInsets.all(16),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Row(
-                          mainAxisAlignment:
-                              MainAxisAlignment.spaceBetween,
-                          children: [
-                            Expanded(
-                              child: Text(
-                                vehicle.displayName,
-                                style: const TextStyle(
-                                  fontWeight: FontWeight.bold,
-                                  fontSize: 16,
-                                ),
+              return Card(
+                margin: const EdgeInsets.only(bottom: 12),
+                child: Padding(
+                  padding: const EdgeInsets.all(16),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Expanded(
+                            child: Text(
+                              vehicle.displayName,
+                              style: const TextStyle(
+                                fontWeight: FontWeight.bold,
+                                fontSize: 16,
                               ),
                             ),
-                            StatusBadge(
-                              status: repairCase.status.label,
-                            ),
-                          ],
-                        ),
-                        const SizedBox(height: 8),
-                        Text(repairCase.description),
-                        const SizedBox(height: 12),
-                        LinearProgressIndicator(
-                          value: repairCase.progress / 100,
-                        ),
-                        const SizedBox(height: 6),
-                        Text(
-                          '${repairCase.progress}% completado',
-                          style: Theme.of(context)
-                              .textTheme
-                              .bodySmall,
-                        ),
-                      ],
-                    ),
+                          ),
+                          StatusBadge(status: repairCase.status.label),
+                        ],
+                      ),
+                      const SizedBox(height: 8),
+                      Text(repairCase.description),
+                      const SizedBox(height: 12),
+                      LinearProgressIndicator(value: repairCase.progress / 100),
+                      const SizedBox(height: 6),
+                      Text(
+                        '${repairCase.progress}% completado',
+                        style: Theme.of(context).textTheme.bodySmall,
+                      ),
+                    ],
                   ),
-                );
-              },
-            ),
+                ),
+              );
+            }),
           ],
         ),
       ),

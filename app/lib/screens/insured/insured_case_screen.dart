@@ -3,7 +3,6 @@ import 'package:flutter/material.dart';
 import '../../models/repair_case.dart';
 import '../../models/vehicle.dart';
 import '../../state/app_state.dart';
-import '../../theme/app_theme.dart';
 import '../../widgets/progress_timeline.dart';
 import '../../widgets/status_badge.dart';
 import '../../widgets/vehicle_card.dart';
@@ -25,12 +24,11 @@ class InsuredCaseScreen extends StatelessWidget {
     final repairCase = appState.getCaseById(caseId);
 
     if (repairCase == null) {
-      return const Scaffold(
-        body: Center(child: Text('Caso no encontrado.')),
-      );
+      return const Scaffold(body: Center(child: Text('Caso no encontrado.')));
     }
 
-    final vehicle = appState.getVehicleById(repairCase.vehicleId) ??
+    final vehicle =
+        appState.getVehicleById(repairCase.vehicleId) ??
         const Vehicle(
           id: '',
           brand: 'Vehículo',
@@ -46,9 +44,7 @@ class InsuredCaseScreen extends StatelessWidget {
     final progressIndex = ((repairCase.progress / 100) * 3).round().clamp(0, 3);
 
     return Scaffold(
-      appBar: AppBar(
-        title: Text(repairCase.claimNumber),
-      ),
+      appBar: AppBar(title: Text(repairCase.claimNumber)),
       body: ListView(
         padding: const EdgeInsets.fromLTRB(20, 12, 20, 24),
         children: [
@@ -57,9 +53,8 @@ class InsuredCaseScreen extends StatelessWidget {
             children: [
               Text(
                 'Estado del caso',
-                style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                      fontWeight: FontWeight.w700,
-                    ),
+                style: Theme.of(context).textTheme.titleLarge
+                    ?.copyWith(fontWeight: FontWeight.w700),
               ),
               StatusBadge(status: repairCase.status.label),
             ],
@@ -76,15 +71,19 @@ class InsuredCaseScreen extends StatelessWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text('DETALLE DEL SINIESTRO',
-                      style: Theme.of(context).textTheme.labelMedium?.copyWith(
-                            color: AppTheme.tealInk,
-                            fontWeight: FontWeight.w800,
-                            letterSpacing: 0.7,
-                          )),
+                  Text(
+                    'DETALLE DEL SINIESTRO',
+                    style: Theme.of(context).textTheme.labelMedium?.copyWith(
+                      color: Theme.of(context).colorScheme.secondary,
+                      fontWeight: FontWeight.w800,
+                      letterSpacing: 0.7,
+                    ),
+                  ),
                   const SizedBox(height: 8),
-                  Text(repairCase.description,
-                      style: Theme.of(context).textTheme.bodyLarge),
+                  Text(
+                    repairCase.description,
+                    style: Theme.of(context).textTheme.bodyLarge,
+                  ),
                   const SizedBox(height: 16),
                   LinearProgressIndicator(
                     minHeight: 6,
@@ -93,9 +92,8 @@ class InsuredCaseScreen extends StatelessWidget {
                   const SizedBox(height: 10),
                   Text(
                     '${repairCase.progress}% completado',
-                    style: Theme.of(context).textTheme.labelLarge?.copyWith(
-                          fontWeight: FontWeight.w700,
-                        ),
+                    style: Theme.of(context).textTheme.labelLarge
+                        ?.copyWith(fontWeight: FontWeight.w700),
                   ),
                   const Divider(height: 24),
                   _CaseDateRow(
@@ -114,17 +112,15 @@ class InsuredCaseScreen extends StatelessWidget {
             ),
           ),
           const SizedBox(height: 16),
-          VehicleCard(
-            vehicle: vehicle,
-            status: repairCase.status.label,
-          ),
+          VehicleCard(vehicle: vehicle, status: repairCase.status.label),
           const SizedBox(height: 4),
           if (workshop != null)
             Card(
               child: ListTile(
                 leading: CircleAvatar(
-                  backgroundColor:
-                      Theme.of(context).colorScheme.secondaryContainer,
+                  backgroundColor: Theme.of(context)
+                      .colorScheme
+                      .secondaryContainer,
                   foregroundColor: Theme.of(context).colorScheme.primary,
                   child: const Icon(Icons.handyman_outlined),
                 ),
@@ -187,9 +183,8 @@ class _CaseDateRow extends StatelessWidget {
       children: [
         Text(
           label,
-          style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                color: Theme.of(context).colorScheme.onSurfaceVariant,
-              ),
+          style: Theme.of(context).textTheme.bodyMedium
+              ?.copyWith(color: Theme.of(context).colorScheme.onSurfaceVariant),
         ),
         Text(value, style: Theme.of(context).textTheme.bodyMedium),
       ],

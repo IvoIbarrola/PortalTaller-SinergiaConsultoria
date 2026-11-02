@@ -2,6 +2,21 @@
 
 Este documento está ordenado para seguir el flujo de trabajo de compilación, instalación y validación de la app.
 
+## Funciones de la demo local
+
+El perfil de Consultoría permite registrar y editar vehículos (incluyendo
+asegurado, versión, chasis/VIN, kilometraje y observaciones), administrar
+talleres y desactivarlos sin borrar su historial. También incluye estadísticas
+con filtros por fecha, estado, taller y búsqueda de siniestro, patente o
+asegurado. Los cambios se guardan en el dispositivo y son datos ficticios de
+presentación, no se sincronizan con Supabase.
+
+Todos los perfiles tienen una pantalla de Configuración para elegir tema claro,
+oscuro o el del sistema, personalizar nombre y contacto en este dispositivo y
+reportar errores. El reporte abre un borrador dirigido a
+`ivo18ibarrola@gmail.com`; el usuario debe confirmar su envío en su aplicación
+de correo. No se adjuntan datos de siniestros.
+
 ## 1. Requisitos previos
 
 - Docker y Docker Compose instalados.

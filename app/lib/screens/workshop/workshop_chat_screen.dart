@@ -34,9 +34,7 @@ class _WorkshopChatScreenState extends State<WorkshopChatScreen> {
     }
 
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Chat del taller'),
-      ),
+      appBar: AppBar(title: const Text('Chat del taller')),
       body: Column(
         children: [
           Expanded(
@@ -67,17 +65,30 @@ class _WorkshopChatScreenState extends State<WorkshopChatScreen> {
                   ),
                   const SizedBox(width: 8),
                   IconButton.filled(
-                    onPressed: () {
+                    onPressed: () async {
                       final text = _controller.text.trim();
                       if (text.isEmpty) return;
 
-                      appState.addMessage(
-                        caseId: widget.caseId,
-                        senderId: currentUser.id,
-                        senderName: currentUser.name,
-                        text: text,
-                      );
+                      try {
+                        await appState.addMessage(
+                          caseId: widget.caseId,
+                          senderId: currentUser.id,
+                          senderName: currentUser.name,
+                          text: text,
+                        );
+                      } catch (error) {
+                        if (!context.mounted) return;
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(
+                            content: Text(
+                              'No se pudo enviar el mensaje: $error',
+                            ),
+                          ),
+                        );
+                        return;
+                      }
                       _controller.clear();
+                      if (mounted) setState(() {});
                     },
                     icon: const Icon(Icons.send),
                   ),

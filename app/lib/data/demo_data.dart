@@ -1,0 +1,208 @@
+import '../models/message.dart';
+import '../models/repair_case.dart';
+import '../models/user.dart';
+import '../models/vehicle.dart';
+import '../models/workshop.dart';
+
+class DemoData {
+  DemoData._();
+
+  static final List<User> users = [
+    const User(id: 'user-insured', name: 'Juan Pérez', role: UserRole.insured),
+    const User(
+      id: 'user-consultant',
+      name: 'Sinergia Consultoría',
+      role: UserRole.consultant,
+    ),
+    const User(
+      id: 'workshop-1-user',
+      name: 'Taller Norte',
+      role: UserRole.workshop,
+      workshopId: 'workshop-1',
+    ),
+    const User(
+      id: 'workshop-2-user',
+      name: 'Taller Central',
+      role: UserRole.workshop,
+      workshopId: 'workshop-2',
+    ),
+  ];
+
+  static final List<Vehicle> vehicles = [
+    const Vehicle(
+      id: 'vehicle-1',
+      brand: 'Toyota',
+      model: 'Corolla',
+      year: 2022,
+      plate: 'AA 123 BB',
+      color: 'Blanco',
+      imageUrl: '',
+      insuredUserId: 'user-insured',
+      vehicleType: 'Sedán',
+      trim: 'XLI',
+      vin: 'JTDBR32E220123456',
+      mileage: 28500,
+      notes: 'Uso familiar',
+    ),
+    const Vehicle(
+      id: 'vehicle-2',
+      brand: 'Volkswagen',
+      model: 'Golf',
+      year: 2021,
+      plate: 'AC 456 CD',
+      color: 'Gris',
+      imageUrl: '',
+      insuredUserId: 'user-insured',
+      vehicleType: 'Hatchback',
+      trim: 'Comfortline',
+      vin: '3VW4T7AU5MM123456',
+      mileage: 41200,
+    ),
+    const Vehicle(
+      id: 'vehicle-3',
+      brand: 'Ford',
+      model: 'Focus',
+      year: 2020,
+      plate: 'AD 789 EF',
+      color: 'Azul',
+      imageUrl: '',
+      insuredUserId: 'user-insured',
+      vehicleType: 'Hatchback',
+      trim: 'SE',
+      vin: '1FADP3F20LL123456',
+      mileage: 53600,
+    ),
+  ];
+
+  static final List<Workshop> workshops = [
+    const Workshop(
+      id: 'workshop-1',
+      name: 'Taller Norte',
+      city: 'Córdoba',
+      phone: '+54 351 555 0101',
+      rating: 4.8,
+      address: 'Av. Colón 2450',
+      contactName: 'María López',
+      specialties: ['Chapa y pintura', 'Mecánica'],
+    ),
+    const Workshop(
+      id: 'workshop-2',
+      name: 'Taller Central',
+      city: 'Rosario',
+      phone: '+54 341 555 0102',
+      rating: 4.6,
+      address: 'Bv. Oroño 1820',
+      contactName: 'Carlos Gómez',
+      specialties: ['Carrocería', 'Cristales'],
+    ),
+  ];
+
+  static final List<RepairCase> repairCases = [
+    RepairCase(
+      id: 'case-1',
+      vehicleId: 'vehicle-1',
+      insuredUserId: 'user-insured',
+      claimNumber: 'SINI-2026-001',
+      description: 'Daños en paragolpes y luces delanteras.',
+      status: RepairCaseStatus.inRepair,
+      entryDate: DateTime.utc(2026, 9, 20),
+      estimatedDeliveryDate: DateTime.utc(2026, 11, 8),
+      progress: 65,
+      workshopId: 'workshop-1',
+      insurerCompany: 'Aseguradora Río',
+      claimType: 'Colisión',
+      companyClaimNumber: 'AR-26001',
+      insuredDni: '25.123.456',
+      insuredPhone: '+54 351 555 0100',
+      insuredEmail: 'juan.demo@example.com',
+      driver: 'Juan Pérez',
+      incidentDate: DateTime.utc(2026, 9, 18),
+      incidentLocation: 'Córdoba Capital',
+      origin: 'Demo local',
+      responsible: 'Equipo Sinergia',
+      registeredAt: DateTime.utc(2026, 9, 20),
+    ),
+    RepairCase(
+      id: 'case-2',
+      vehicleId: 'vehicle-2',
+      insuredUserId: 'user-insured',
+      claimNumber: 'SINI-2026-002',
+      description: 'Revisión de puerta lateral y ajuste de pintura.',
+      status: RepairCaseStatus.awaitingParts,
+      entryDate: DateTime.utc(2026, 9, 25),
+      estimatedDeliveryDate: DateTime.utc(2026, 11, 12),
+      progress: 35,
+      workshopId: 'workshop-2',
+      insurerCompany: 'Aseguradora Río',
+      claimType: 'Daño parcial',
+      companyClaimNumber: 'AR-26002',
+      insuredDni: '25.123.456',
+      insuredPhone: '+54 351 555 0100',
+      insuredEmail: 'juan.demo@example.com',
+      driver: 'Juan Pérez',
+      incidentDate: DateTime.utc(2026, 9, 23),
+      incidentLocation: 'Villa Allende',
+      origin: 'Demo local',
+      responsible: 'Equipo Sinergia',
+      registeredAt: DateTime.utc(2026, 9, 25),
+    ),
+    RepairCase(
+      id: 'case-3',
+      vehicleId: 'vehicle-3',
+      insuredUserId: 'user-insured',
+      claimNumber: 'SINI-2026-003',
+      description: 'Inspección inicial por daños en el lateral derecho.',
+      status: RepairCaseStatus.newCase,
+      entryDate: DateTime.utc(2026, 10, 4),
+      estimatedDeliveryDate: DateTime.utc(2026, 11, 20),
+      progress: 10,
+      insurerCompany: 'Aseguradora del Centro',
+      claimType: 'Inspección',
+      insuredDni: '25.123.456',
+      insuredPhone: '+54 351 555 0100',
+      insuredEmail: 'juan.demo@example.com',
+      driver: 'Juan Pérez',
+      incidentDate: DateTime.utc(2026, 10, 3),
+      incidentLocation: 'Córdoba Capital',
+      origin: 'Demo local',
+      responsible: 'Equipo Sinergia',
+      registeredAt: DateTime.utc(2026, 10, 4),
+    ),
+  ];
+
+  static final List<Message> messages = [
+    Message(
+      id: 'msg-1',
+      caseId: 'case-1',
+      senderId: 'user-insured',
+      senderName: 'Juan Pérez',
+      text: 'Buenas tardes, ¿tuvieron novedades del Corolla?',
+      createdAt: DateTime.utc(2026, 9, 20, 9, 45),
+    ),
+    Message(
+      id: 'msg-2',
+      caseId: 'case-1',
+      senderId: 'workshop-1-user',
+      senderName: 'Taller Norte',
+      text:
+          'Ya estamos con la reparación. Estimamos la entrega para noviembre.',
+      createdAt: DateTime.utc(2026, 9, 20, 10, 5),
+    ),
+    Message(
+      id: 'msg-3',
+      caseId: 'case-2',
+      senderId: 'user-insured',
+      senderName: 'Juan Pérez',
+      text: '¿Tienen novedades sobre el repuesto del Golf?',
+      createdAt: DateTime.utc(2026, 9, 25, 12, 15),
+    ),
+    Message(
+      id: 'msg-4',
+      caseId: 'case-2',
+      senderId: 'workshop-2-user',
+      senderName: 'Taller Central',
+      text: 'El repuesto está en tránsito y esperamos recibirlo pronto.',
+      createdAt: DateTime.utc(2026, 9, 25, 12, 30),
+    ),
+  ];
+}

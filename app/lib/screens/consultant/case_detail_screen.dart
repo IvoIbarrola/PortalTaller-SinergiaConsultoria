@@ -3,7 +3,6 @@ import 'package:flutter/material.dart';
 import '../../models/repair_case.dart';
 import '../../models/vehicle.dart';
 import '../../state/app_state.dart';
-import '../../theme/app_theme.dart';
 import '../../widgets/progress_timeline.dart';
 import '../../widgets/status_badge.dart';
 import '../../widgets/vehicle_card.dart';
@@ -22,9 +21,6 @@ class CaseDetailScreen extends StatefulWidget {
 class _CaseDetailScreenState extends State<CaseDetailScreen> {
   final appState = AppState();
   String? _selectedWorkshopId;
-  final Set<String> _completedTasks = {};
-  final Set<String> _receivedDocuments = {};
-  final List<String> _localActivity = [];
   final TextEditingController _activityController = TextEditingController();
 
   static const List<String> _taskTitles = [
@@ -53,14 +49,16 @@ class _CaseDetailScreenState extends State<CaseDetailScreen> {
     final repairCase = appState.getCaseById(widget.caseId);
 
     if (repairCase == null) {
-      return const Scaffold(
-        body: Center(child: Text('Caso no encontrado.')),
-      );
+      return const Scaffold(body: Center(child: Text('Caso no encontrado.')));
     }
 
-    _selectedWorkshopId ??= repairCase.workshopId ??
-      (appState.workshops.isNotEmpty ? appState.workshops.first.id : null);
-    final vehicle = appState.getVehicleById(repairCase.vehicleId) ??
+    _selectedWorkshopId ??=
+        repairCase.workshopId ??
+        (appState.activeWorkshops.isNotEmpty
+            ? appState.activeWorkshops.first.id
+            : null);
+    final vehicle =
+        appState.getVehicleById(repairCase.vehicleId) ??
         const Vehicle(
           id: '',
           brand: 'Vehículo',
@@ -74,9 +72,7 @@ class _CaseDetailScreenState extends State<CaseDetailScreen> {
     final progressIndex = ((repairCase.progress / 100) * 3).round().clamp(0, 3);
 
     return Scaffold(
-      appBar: AppBar(
-        title: Text(repairCase.claimNumber),
-      ),
+      appBar: AppBar(title: Text(repairCase.claimNumber)),
       body: ListView(
         padding: const EdgeInsets.fromLTRB(20, 12, 20, 24),
         children: [
@@ -85,9 +81,8 @@ class _CaseDetailScreenState extends State<CaseDetailScreen> {
             children: [
               Text(
                 'Ficha de siniestro',
-                style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                      fontWeight: FontWeight.w700,
-                    ),
+                style: Theme.of(context).textTheme.titleLarge
+                    ?.copyWith(fontWeight: FontWeight.w700),
               ),
               StatusBadge(status: repairCase.status.label),
             ],
@@ -107,17 +102,21 @@ class _CaseDetailScreenState extends State<CaseDetailScreen> {
                   Text(
                     'INFORMACIÓN DEL CASO',
                     style: Theme.of(context).textTheme.labelMedium?.copyWith(
-                          color: AppTheme.tealInk,
-                          fontWeight: FontWeight.w800,
-                          letterSpacing: 0.7,
-                        ),
+                      color: Theme.of(context).colorScheme.secondary,
+                      fontWeight: FontWeight.w800,
+                      letterSpacing: 0.7,
+                    ),
                   ),
                   const SizedBox(height: 8),
-                  Text(repairCase.description,
-                      style: Theme.of(context).textTheme.bodyLarge),
+                  Text(
+                    repairCase.description,
+                    style: Theme.of(context).textTheme.bodyLarge,
+                  ),
                   const SizedBox(height: 12),
                   Text('Asegurado: ${insured?.name ?? 'Sin dato'}'),
-                  Text('Ingreso: ${repairCase.entryDate.day}/${repairCase.entryDate.month}/${repairCase.entryDate.year}'),
+                  Text(
+                    'Ingreso: ${repairCase.entryDate.day}/${repairCase.entryDate.month}/${repairCase.entryDate.year}',
+                  ),
                   if (repairCase.estimatedDeliveryDate != null)
                     Text(
                       'Entrega estimada: ${repairCase.estimatedDeliveryDate!.day}/${repairCase.estimatedDeliveryDate!.month}/${repairCase.estimatedDeliveryDate!.year}',
@@ -139,9 +138,10 @@ class _CaseDetailScreenState extends State<CaseDetailScreen> {
                       Expanded(
                         child: Text(
                           'ENCABEZADO DEL SINIESTRO',
-                          style: Theme.of(context).textTheme.labelLarge?.copyWith(
+                          style: Theme.of(context).textTheme.labelLarge
+                              ?.copyWith(
                                 fontWeight: FontWeight.w800,
-                                color: AppTheme.tealInk,
+                                color: Theme.of(context).colorScheme.secondary,
                               ),
                         ),
                       ),
@@ -170,11 +170,13 @@ class _CaseDetailScreenState extends State<CaseDetailScreen> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text('DATOS DE LA ASEGURADA',
-                      style: Theme.of(context).textTheme.labelLarge?.copyWith(
-                            fontWeight: FontWeight.w800,
-                            color: AppTheme.tealInk,
-                          )),
+                  Text(
+                    'DATOS DE LA ASEGURADA',
+                    style: Theme.of(context).textTheme.labelLarge?.copyWith(
+                      fontWeight: FontWeight.w800,
+                      color: Theme.of(context).colorScheme.secondary,
+                    ),
+                  ),
                   const SizedBox(height: 8),
                   _detailRow('DNI / CUIT', repairCase.insuredDni),
                   _detailRow('Teléfono', repairCase.insuredPhone),
@@ -183,9 +185,15 @@ class _CaseDetailScreenState extends State<CaseDetailScreen> {
                   _detailRow('Conductor', repairCase.driver),
                   _detailRow('Broker', repairCase.broker),
                   _detailRow('PAS', repairCase.pasName),
-                  _detailRow('Fecha del siniestro', _formatDate(repairCase.incidentDate)),
+                  _detailRow(
+                    'Fecha del siniestro',
+                    _formatDate(repairCase.incidentDate),
+                  ),
                   _detailRow('Ubicación', repairCase.incidentLocation),
-                  _detailRow('Terceros', repairCase.hasThirdParties ? 'Sí' : 'No'),
+                  _detailRow(
+                    'Terceros',
+                    repairCase.hasThirdParties ? 'Sí' : 'No',
+                  ),
                   _detailRow('Adjunto', repairCase.attachmentFilename),
                 ],
               ),
@@ -197,17 +205,30 @@ class _CaseDetailScreenState extends State<CaseDetailScreen> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text('RESUMEN',
-                      style: Theme.of(context).textTheme.labelLarge?.copyWith(
-                            fontWeight: FontWeight.w800,
-                            color: AppTheme.tealInk,
-                          )),
+                  Text(
+                    'RESUMEN',
+                    style: Theme.of(context).textTheme.labelLarge?.copyWith(
+                      fontWeight: FontWeight.w800,
+                      color: Theme.of(context).colorScheme.secondary,
+                    ),
+                  ),
                   const SizedBox(height: 8),
-                  _detailRow('Días en gestión', '${DateTime.now().difference(repairCase.entryDate).inDays} días'),
+                  _detailRow(
+                    'Días en gestión',
+                    '${DateTime.now().difference(repairCase.entryDate).inDays} días',
+                  ),
                   _detailRow('Ingresado', _formatDate(repairCase.entryDate)),
                   _detailRow('Origen', repairCase.origin),
-                  _detailRow('Terceros', repairCase.hasThirdParties ? 'Sí' : 'No'),
-                  _detailRow('Responsable', repairCase.responsible.isEmpty ? 'Sin asignar' : repairCase.responsible),
+                  _detailRow(
+                    'Terceros',
+                    repairCase.hasThirdParties ? 'Sí' : 'No',
+                  ),
+                  _detailRow(
+                    'Responsable',
+                    repairCase.responsible.isEmpty
+                        ? 'Sin asignar'
+                        : repairCase.responsible,
+                  ),
                 ],
               ),
             ),
@@ -218,25 +239,44 @@ class _CaseDetailScreenState extends State<CaseDetailScreen> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text('CHECKLIST DE GESTIÓN · ${_completedTasks.length}/${_taskTitles.length}',
-                      style: Theme.of(context).textTheme.labelLarge?.copyWith(
-                            fontWeight: FontWeight.w800,
-                            color: AppTheme.tealInk,
-                          )),
+                  Text(
+                    'CHECKLIST DE GESTIÓN · ${_taskTitles.where((task) => appState.isChecklistCompleted(widget.caseId, task)).length}/${_taskTitles.length}',
+                    style: Theme.of(context).textTheme.labelLarge?.copyWith(
+                      fontWeight: FontWeight.w800,
+                      color: Theme.of(context).colorScheme.secondary,
+                    ),
+                  ),
                   const SizedBox(height: 8),
-                  ..._taskTitles.map((title) => CheckboxListTile(
-                        contentPadding: EdgeInsets.zero,
-                        dense: true,
-                        value: _completedTasks.contains(title),
-                        title: Text(title),
-                        onChanged: (value) => setState(() {
-                          if (value == true) {
-                            _completedTasks.add(title);
-                          } else {
-                            _completedTasks.remove(title);
-                          }
-                        }),
-                      )),
+                  ..._taskTitles.map(
+                    (title) => CheckboxListTile(
+                      contentPadding: EdgeInsets.zero,
+                      dense: true,
+                      value: appState.isChecklistCompleted(
+                        widget.caseId,
+                        title,
+                      ),
+                      title: Text(title),
+                      onChanged: (value) async {
+                        try {
+                          await appState.setChecklistCompleted(
+                            widget.caseId,
+                            title,
+                            value == true,
+                          );
+                          if (mounted) setState(() {});
+                        } catch (error) {
+                          if (!context.mounted) return;
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(
+                              content: Text(
+                                'No se pudo guardar el checklist: $error',
+                              ),
+                            ),
+                          );
+                        }
+                      },
+                    ),
+                  ),
                 ],
               ),
             ),
@@ -247,28 +287,46 @@ class _CaseDetailScreenState extends State<CaseDetailScreen> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text('DOCUMENTACIÓN',
-                      style: Theme.of(context).textTheme.labelLarge?.copyWith(
-                            fontWeight: FontWeight.w800,
-                            color: AppTheme.tealInk,
-                          )),
+                  Text(
+                    'DOCUMENTACIÓN',
+                    style: Theme.of(context).textTheme.labelLarge?.copyWith(
+                      fontWeight: FontWeight.w800,
+                      color: Theme.of(context).colorScheme.secondary,
+                    ),
+                  ),
                   const SizedBox(height: 8),
-                  ..._documentTitles.map((title) => CheckboxListTile(
-                        contentPadding: EdgeInsets.zero,
-                        dense: true,
-                        value: _receivedDocuments.contains(title),
-                        title: Text(title),
-                        subtitle: Text(_receivedDocuments.contains(title)
+                  ..._documentTitles.map(
+                    (title) => CheckboxListTile(
+                      contentPadding: EdgeInsets.zero,
+                      dense: true,
+                      value: appState.isDocumentReceived(widget.caseId, title),
+                      title: Text(title),
+                      subtitle: Text(
+                        appState.isDocumentReceived(widget.caseId, title)
                             ? 'Recibido'
-                            : 'Pendiente'),
-                        onChanged: (value) => setState(() {
-                          if (value == true) {
-                            _receivedDocuments.add(title);
-                          } else {
-                            _receivedDocuments.remove(title);
-                          }
-                        }),
-                      )),
+                            : 'Pendiente',
+                      ),
+                      onChanged: (value) async {
+                        try {
+                          await appState.setDocumentReceived(
+                            widget.caseId,
+                            title,
+                            value == true,
+                          );
+                          if (mounted) setState(() {});
+                        } catch (error) {
+                          if (!context.mounted) return;
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(
+                              content: Text(
+                                'No se pudo guardar la documentación: $error',
+                              ),
+                            ),
+                          );
+                        }
+                      },
+                    ),
+                  ),
                 ],
               ),
             ),
@@ -279,25 +337,30 @@ class _CaseDetailScreenState extends State<CaseDetailScreen> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text('NOVEDADES E HISTORIAL',
-                      style: Theme.of(context).textTheme.labelLarge?.copyWith(
-                            fontWeight: FontWeight.w800,
-                            color: AppTheme.tealInk,
-                          )),
+                  Text(
+                    'NOVEDADES E HISTORIAL',
+                    style: Theme.of(context).textTheme.labelLarge?.copyWith(
+                      fontWeight: FontWeight.w800,
+                      color: Theme.of(context).colorScheme.secondary,
+                    ),
+                  ),
                   const SizedBox(height: 8),
-                  Text('Sincronizado desde ${repairCase.origin} — ${repairCase.claimBranch} — ${repairCase.claimType}'),
-                  for (final item in _localActivity)
+                  Text(
+                    'Sincronizado desde ${repairCase.origin} — ${repairCase.claimBranch} — ${repairCase.claimType}',
+                  ),
+                  for (final item in appState.activityForCase(widget.caseId))
                     ListTile(
                       contentPadding: EdgeInsets.zero,
                       leading: const Icon(Icons.history),
                       title: Text(item),
-                      subtitle: const Text('Registrado en esta sesión de demostración'),
+                      subtitle: const Text('Guardado en este dispositivo'),
                     ),
                   TextField(
                     controller: _activityController,
                     maxLines: 2,
                     decoration: const InputDecoration(
-                      labelText: 'Agregar novedad, llamada o respuesta de compañía',
+                      labelText:
+                          'Agregar novedad, llamada o respuesta de compañía',
                       border: OutlineInputBorder(),
                     ),
                   ),
@@ -305,13 +368,23 @@ class _CaseDetailScreenState extends State<CaseDetailScreen> {
                   Align(
                     alignment: Alignment.centerRight,
                     child: FilledButton.icon(
-                      onPressed: () {
+                      onPressed: () async {
                         final note = _activityController.text.trim();
                         if (note.isEmpty) return;
-                        setState(() {
-                          _localActivity.insert(0, note);
-                          _activityController.clear();
-                        });
+                        try {
+                          await appState.addCaseActivity(widget.caseId, note);
+                          if (!context.mounted) return;
+                          setState(_activityController.clear);
+                        } catch (error) {
+                          if (!mounted) return;
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(
+                              content: Text(
+                                'No se pudo guardar la novedad: $error',
+                              ),
+                            ),
+                          );
+                        }
                       },
                       icon: const Icon(Icons.add),
                       label: const Text('Registrar'),
@@ -323,11 +396,13 @@ class _CaseDetailScreenState extends State<CaseDetailScreen> {
           ),
           const SizedBox(height: 16),
           DropdownButtonFormField<String>(
-            value: _selectedWorkshopId,
-            decoration: const InputDecoration(
-              labelText: 'Asignar taller',
-            ),
+            initialValue: _selectedWorkshopId,
+            decoration: const InputDecoration(labelText: 'Asignar taller'),
             items: appState.workshops
+                .where(
+                  (workshop) =>
+                      workshop.isActive || workshop.id == repairCase.workshopId,
+                )
                 .map(
                   (workshop) => DropdownMenuItem(
                     value: workshop.id,
@@ -335,18 +410,25 @@ class _CaseDetailScreenState extends State<CaseDetailScreen> {
                   ),
                 )
                 .toList(),
-            onChanged: (value) {
+            onChanged: (value) async {
               if (value == null) return;
-              appState.assignWorkshop(widget.caseId, value);
-              setState(() => _selectedWorkshopId = value);
+              try {
+                await appState.assignWorkshop(widget.caseId, value);
+                if (mounted) setState(() => _selectedWorkshopId = value);
+              } catch (error) {
+                if (!context.mounted) return;
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(
+                    content: Text('No se pudo asignar el taller: $error'),
+                  ),
+                );
+              }
             },
           ),
           const SizedBox(height: 12),
           DropdownButtonFormField<RepairCaseStatus>(
-            value: repairCase.status,
-            decoration: const InputDecoration(
-              labelText: 'Estado',
-            ),
+            initialValue: repairCase.status,
+            decoration: const InputDecoration(labelText: 'Estado'),
             items: RepairCaseStatus.values
                 .map(
                   (status) => DropdownMenuItem(
@@ -355,34 +437,48 @@ class _CaseDetailScreenState extends State<CaseDetailScreen> {
                   ),
                 )
                 .toList(),
-            onChanged: (value) {
+            onChanged: (value) async {
               if (value == null) return;
-              appState.updateCaseStatus(widget.caseId, value);
-              setState(() {});
+              try {
+                await appState.updateCaseStatus(widget.caseId, value);
+                if (mounted) setState(() {});
+              } catch (error) {
+                if (!context.mounted) return;
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(
+                    content: Text('No se pudo actualizar el estado: $error'),
+                  ),
+                );
+              }
             },
           ),
           const SizedBox(height: 16),
           Text(
             'Avance de reparación · ${repairCase.progress}%',
-            style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                  fontWeight: FontWeight.w700,
-                ),
+            style: Theme.of(context).textTheme.titleSmall
+                ?.copyWith(fontWeight: FontWeight.w700),
           ),
           Slider(
             value: repairCase.progress.toDouble(),
             min: 0,
             max: 100,
             divisions: 100,
-            onChanged: (value) {
-              appState.updateProgress(widget.caseId, value.round());
-              setState(() {});
+            onChanged: (value) async {
+              try {
+                await appState.updateProgress(widget.caseId, value.round());
+                if (mounted) setState(() {});
+              } catch (error) {
+                if (!context.mounted) return;
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(
+                    content: Text('No se pudo guardar el avance: $error'),
+                  ),
+                );
+              }
             },
           ),
           const SizedBox(height: 16),
-          VehicleCard(
-            vehicle: vehicle,
-            status: repairCase.status.label,
-          ),
+          VehicleCard(vehicle: vehicle, status: repairCase.status.label),
           const SizedBox(height: 12),
           FilledButton.icon(
             onPressed: () {
@@ -416,6 +512,7 @@ class _CaseDetailScreenState extends State<CaseDetailScreen> {
       ),
     );
   }
+
   Widget _detailRow(String label, String value) {
     if (value.trim().isEmpty) return const SizedBox.shrink();
     return Padding(
@@ -425,7 +522,10 @@ class _CaseDetailScreenState extends State<CaseDetailScreen> {
         children: [
           SizedBox(
             width: 132,
-            child: Text(label, style: const TextStyle(fontWeight: FontWeight.w600)),
+            child: Text(
+              label,
+              style: const TextStyle(fontWeight: FontWeight.w600),
+            ),
           ),
           Expanded(child: Text(value)),
         ],
@@ -437,6 +537,4 @@ class _CaseDetailScreenState extends State<CaseDetailScreen> {
     if (date == null) return 'Sin completar';
     return '${date.day.toString().padLeft(2, '0')}/${date.month.toString().padLeft(2, '0')}/${date.year}';
   }
-
-
 }

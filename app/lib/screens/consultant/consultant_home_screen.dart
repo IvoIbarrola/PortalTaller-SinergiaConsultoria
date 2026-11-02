@@ -2,10 +2,14 @@ import 'package:flutter/material.dart';
 
 import '../../state/app_state.dart';
 import '../../widgets/repair_case_card.dart';
+import '../settings/settings_screen.dart';
 import 'calendar_screen.dart';
 import 'case_detail_screen.dart';
 import 'cases_screen.dart';
+import 'consultant_statistics_screen.dart';
 import 'new_case_screen.dart';
+import 'vehicles_management_screen.dart';
+import 'workshops_screen.dart';
 
 class ConsultantHomeScreen extends StatelessWidget {
   const ConsultantHomeScreen({super.key});
@@ -13,120 +17,175 @@ class ConsultantHomeScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final appState = AppState();
-    final cases = appState.allCases;
-
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('Consultoría'),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.calendar_month),
-            onPressed: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (_) => const CalendarScreen(),
+    return ListenableBuilder(
+      listenable: appState,
+      builder: (context, _) {
+        final cases = appState.allCases;
+        return Scaffold(
+          appBar: AppBar(
+            title: Text(appState.currentUser?.name ?? 'Consultoría'),
+            actions: [
+              IconButton(
+                tooltip: 'Configuración',
+                icon: const Icon(Icons.settings_outlined),
+                onPressed: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (_) => const SettingsScreen()),
+                  );
+                },
+              ),
+              IconButton(
+                icon: const Icon(Icons.calendar_month),
+                onPressed: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (_) => const CalendarScreen()),
+                  );
+                },
+              ),
+              IconButton(
+                icon: const Icon(Icons.logout),
+                onPressed: () {
+                  appState.logout();
+                  Navigator.of(context)
+                      .pushNamedAndRemoveUntil('/', (route) => false);
+                },
+              ),
+            ],
+          ),
+          body: Padding(
+            padding: const EdgeInsets.fromLTRB(20, 12, 20, 16),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'Seguimiento de siniestros',
+                  style: Theme.of(context).textTheme.headlineSmall
+                      ?.copyWith(fontWeight: FontWeight.w800),
                 ),
-              );
-            },
-          ),
-          IconButton(
-            icon: const Icon(Icons.logout),
-            onPressed: () {
-              appState.logout();
-              Navigator.of(context).pushNamedAndRemoveUntil(
-                '/',
-                (route) => false,
-              );
-            },
-          ),
-        ],
-      ),
-      body: Padding(
-        padding: const EdgeInsets.fromLTRB(20, 12, 20, 16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              'Seguimiento de siniestros',
-              style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                    fontWeight: FontWeight.w800,
-                  ),
-            ),
-            const SizedBox(height: 5),
-            Text(
-              '${cases.length} casos en la red',
-              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                const SizedBox(height: 5),
+                Text(
+                  '${cases.length} casos en la red',
+                  style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                     color: Theme.of(context).colorScheme.onSurfaceVariant,
                   ),
-            ),
-            const SizedBox(height: 20),
-            Row(
-              children: [
-                Expanded(
-                  child: FilledButton.icon(
-                    onPressed: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (_) => const NewCaseScreen(),
-                        ),
-                      );
-                    },
-                    icon: const Icon(Icons.add),
-                    label: const Text('Nuevo caso'),
-                  ),
                 ),
-                const SizedBox(width: 10),
+                const SizedBox(height: 20),
+                Row(
+                  children: [
+                    Expanded(
+                      child: FilledButton.icon(
+                        onPressed: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (_) => const NewCaseScreen(),
+                            ),
+                          );
+                        },
+                        icon: const Icon(Icons.add),
+                        label: const Text('Nuevo caso'),
+                      ),
+                    ),
+                    const SizedBox(width: 10),
+                    Expanded(
+                      child: OutlinedButton.icon(
+                        onPressed: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (_) => const CasesScreen(),
+                            ),
+                          );
+                        },
+                        icon: const Icon(Icons.list_alt),
+                        label: const Text('Todos'),
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 8),
+                Wrap(
+                  spacing: 8,
+                  runSpacing: 8,
+                  children: [
+                    OutlinedButton.icon(
+                      onPressed: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (_) => const ConsultantStatisticsScreen(),
+                          ),
+                        );
+                      },
+                      icon: const Icon(Icons.analytics_outlined),
+                      label: const Text('Estadísticas'),
+                    ),
+                    OutlinedButton.icon(
+                      onPressed: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (_) => const WorkshopsScreen(),
+                          ),
+                        );
+                      },
+                      icon: const Icon(Icons.handyman_outlined),
+                      label: const Text('Talleres'),
+                    ),
+                    OutlinedButton.icon(
+                      onPressed: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (_) => const VehiclesManagementScreen(),
+                          ),
+                        );
+                      },
+                      icon: const Icon(Icons.directions_car_outlined),
+                      label: const Text('Vehículos'),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 20),
                 Expanded(
-                  child: OutlinedButton.icon(
-                    onPressed: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (_) => const CasesScreen(),
+                  child: cases.isEmpty
+                      ? const Center(
+                          child: Text('Todavía no hay casos registrados.'),
+                        )
+                      : ListView.builder(
+                          itemCount: cases.length,
+                          itemBuilder: (context, index) {
+                            final repairCase = cases[index];
+                            final vehicle = appState.getVehicleById(
+                              repairCase.vehicleId,
+                            );
+                            if (vehicle == null) {
+                              return const SizedBox.shrink();
+                            }
+
+                            return RepairCaseCard(
+                              repairCase: repairCase,
+                              vehicle: vehicle,
+                              onTap: () {
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (_) =>
+                                        CaseDetailScreen(caseId: repairCase.id),
+                                  ),
+                                );
+                              },
+                            );
+                          },
                         ),
-                      );
-                    },
-                    icon: const Icon(Icons.list_alt),
-                    label: const Text('Todos'),
-                  ),
                 ),
               ],
             ),
-            const SizedBox(height: 20),
-            Expanded(
-              child: cases.isEmpty
-                  ? const Center(child: Text('Todavía no hay casos registrados.'))
-                  : ListView.builder(
-                      itemCount: cases.length,
-                      itemBuilder: (context, index) {
-                        final repairCase = cases[index];
-                        final vehicle =
-                            appState.getVehicleById(repairCase.vehicleId);
-                        if (vehicle == null) {
-                          return const SizedBox.shrink();
-                        }
-
-                        return RepairCaseCard(
-                          repairCase: repairCase,
-                          vehicle: vehicle,
-                          onTap: () {
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                builder: (_) =>
-                                    CaseDetailScreen(caseId: repairCase.id),
-                              ),
-                            );
-                          },
-                        );
-                      },
-                    ),
-            ),
-          ],
-        ),
-      ),
+          ),
+        );
+      },
     );
   }
 }

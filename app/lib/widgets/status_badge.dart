@@ -1,44 +1,46 @@
 import 'package:flutter/material.dart';
 
-import '../theme/app_theme.dart';
-
 class StatusBadge extends StatelessWidget {
   final String status;
 
-  const StatusBadge({
-    super.key,
-    required this.status,
-  });
+  const StatusBadge({super.key, required this.status});
 
-  Color _getColor() {
+  Color _getColor(ColorScheme colors, Brightness brightness) {
     switch (status.toLowerCase()) {
       case 'finalizado':
       case 'entregado':
       case 'listo para entregar':
-        return AppTheme.success;
+        return brightness == Brightness.dark
+            ? const Color(0xFF81C784)
+            : const Color(0xFF287F68);
       case 'en reparación':
       case 'inspección':
       case 'control de calidad':
-        return AppTheme.tealInk;
+        return colors.primary;
       case 'en espera de repuestos':
       case 'esperando repuestos':
       case 'aprobación':
-        return AppTheme.warning;
+        return brightness == Brightness.dark
+            ? const Color(0xFFFFCC80)
+            : const Color(0xFFAA681C);
       case 'pendiente':
       case 'nuevo':
       case 'en revisión':
       case 'presupuesto':
       case 'taller asignado':
       case 'recibido':
-        return AppTheme.mutedText;
+        return colors.onSurfaceVariant;
       default:
-        return AppTheme.attention;
+        return colors.error;
     }
   }
 
   @override
   Widget build(BuildContext context) {
-    final color = _getColor();
+    final color = _getColor(
+      Theme.of(context).colorScheme,
+      Theme.of(context).brightness,
+    );
 
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),

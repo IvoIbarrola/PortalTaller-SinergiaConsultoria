@@ -17,12 +17,10 @@ class WorkshopPhotosScreen extends StatefulWidget {
   });
 
   @override
-  State<WorkshopPhotosScreen> createState() =>
-      _WorkshopPhotosScreenState();
+  State<WorkshopPhotosScreen> createState() => _WorkshopPhotosScreenState();
 }
 
-class _WorkshopPhotosScreenState
-    extends State<WorkshopPhotosScreen> {
+class _WorkshopPhotosScreenState extends State<WorkshopPhotosScreen> {
   final AppState appState = AppState();
   final ImagePicker _picker = ImagePicker();
 
@@ -46,7 +44,8 @@ class _WorkshopPhotosScreenState
       if (!mounted) return;
 
       if (photo != null) {
-        appState.addPhotoToCase(widget.caseId, photo.path);
+        await appState.addPhotoToCase(widget.caseId, photo.path);
+        if (!mounted) return;
 
         setState(() {});
 
@@ -60,11 +59,7 @@ class _WorkshopPhotosScreenState
       if (!mounted) return;
 
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text(
-            'No se pudo abrir la cámara. Verificá los permisos.',
-          ),
-        ),
+        SnackBar(content: Text('No se pudo guardar la fotografía: $error')),
       );
     } finally {
       if (mounted) {
@@ -73,11 +68,18 @@ class _WorkshopPhotosScreenState
     }
   }
 
-  void _removePhoto(String photoPath) {
+  Future<void> _removePhoto(String photoPath) async {
     if (!_canManagePhotos) return;
 
-    appState.removePhotoFromCase(widget.caseId, photoPath);
-    setState(() {});
+    try {
+      await appState.removePhotoFromCase(widget.caseId, photoPath);
+      if (mounted) setState(() {});
+    } catch (error) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('No se pudo eliminar la fotografía: $error')),
+      );
+    }
   }
 
   @override
@@ -85,9 +87,7 @@ class _WorkshopPhotosScreenState
     final photos = appState.photosForCase(widget.caseId);
 
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Registro fotográfico'),
-      ),
+      appBar: AppBar(title: const Text('Registro fotográfico')),
       body: Column(
         children: [
           Padding(
@@ -97,16 +97,15 @@ class _WorkshopPhotosScreenState
               children: [
                 Text(
                   'Siniestro: ${widget.claimNumber}',
-                  style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                        fontWeight: FontWeight.w700,
-                      ),
+                  style: Theme.of(context).textTheme.titleLarge
+                      ?.copyWith(fontWeight: FontWeight.w700),
                 ),
                 const SizedBox(height: 8),
                 Text(
                   '${photos.length} fotografías registradas',
                   style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                        color: Theme.of(context).colorScheme.onSurfaceVariant,
-                      ),
+                    color: Theme.of(context).colorScheme.onSurfaceVariant,
+                  ),
                 ),
                 if (_canManagePhotos) ...[
                   const SizedBox(height: 12),
@@ -156,7 +155,8 @@ class _WorkshopPhotosScreenState
                                 ? 'Las imágenes del caso aparecerán acá.'
                                 : 'Todavía no se cargaron imágenes para este caso.',
                             textAlign: TextAlign.center,
-                            style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                            style: Theme.of(context).textTheme.bodyMedium
+                                ?.copyWith(
                                   color: Theme.of(context)
                                       .colorScheme
                                       .onSurfaceVariant,
@@ -168,10 +168,10 @@ class _WorkshopPhotosScreenState
                   )
                 : GridView.builder(
                     padding: const EdgeInsets.all(12),
-                    gridDelegate:
-                        SliverGridDelegateWithFixedCrossAxisCount(
-                      crossAxisCount:
-                          MediaQuery.sizeOf(context).width >= 700 ? 3 : 2,
+                    gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                      crossAxisCount: MediaQuery.sizeOf(context).width >= 700
+                          ? 3
+                          : 2,
                       crossAxisSpacing: 14,
                       mainAxisSpacing: 14,
                       childAspectRatio: 0.82,
@@ -188,7 +188,7 @@ class _WorkshopPhotosScreenState
                             Image.file(
                               File(path),
                               fit: BoxFit.cover,
-                              errorBuilder: (_, __, ___) {
+                              errorBuilder: (_, _, _) {
                                 return const Center(
                                   child: Icon(
                                     Icons.broken_image_outlined,
@@ -211,9 +211,7 @@ class _WorkshopPhotosScreenState
                                 ),
                                 child: Text(
                                   'Foto ${index + 1}',
-                                  style: const TextStyle(
-                                    color: Colors.white,
-                                  ),
+                                  style: const TextStyle(color: Colors.white),
                                 ),
                               ),
                             ),
@@ -232,9 +230,7 @@ class _WorkshopPhotosScreenState
                                         .colorScheme
                                         .onErrorContainer,
                                   ),
-                                  icon: const Icon(
-                                    Icons.delete_outline,
-                                  ),
+                                  icon: const Icon(Icons.delete_outline),
                                 ),
                               ),
                           ],

@@ -25,10 +25,7 @@ class SupabaseConfig {
       return;
     }
 
-    await Supabase.initialize(
-      url: _url,
-      anonKey: _anonKey,
-    );
+    await Supabase.initialize(url: _url, publishableKey: _anonKey);
   }
 
   static SupabaseClient? get client {

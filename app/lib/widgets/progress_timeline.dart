@@ -1,7 +1,5 @@
 import 'package:flutter/material.dart';
 
-import '../theme/app_theme.dart';
-
 class ProgressTimeline extends StatelessWidget {
   final List<String> steps;
   final int currentIndex;
@@ -14,6 +12,7 @@ class ProgressTimeline extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colors = Theme.of(context).colorScheme;
     return SizedBox(
       height: 72,
       child: ListView.separated(
@@ -22,9 +21,7 @@ class ProgressTimeline extends StatelessWidget {
         separatorBuilder: (_, __) => const SizedBox(width: 0),
         itemBuilder: (context, index) {
           final active = index <= currentIndex;
-          final color = active
-              ? AppTheme.teal
-              : AppTheme.border;
+          final color = active ? colors.secondary : colors.outlineVariant;
           final isLast = index == steps.length - 1;
 
           return SizedBox(
@@ -39,9 +36,11 @@ class ProgressTimeline extends StatelessWidget {
                       height: 20,
                       decoration: BoxDecoration(
                         shape: BoxShape.circle,
-                        color: active ? AppTheme.tealInk : AppTheme.surface,
+                        color: active ? colors.primary : colors.surface,
                         border: Border.all(
-                          color: active ? AppTheme.tealInk : AppTheme.border,
+                          color: active
+                              ? colors.primary
+                              : colors.outlineVariant,
                           width: 2,
                         ),
                       ),
@@ -54,12 +53,7 @@ class ProgressTimeline extends StatelessWidget {
                           : null,
                     ),
                     if (!isLast)
-                      Expanded(
-                        child: Container(
-                          height: 2,
-                          color: color,
-                        ),
-                      ),
+                      Expanded(child: Container(height: 2, color: color)),
                   ],
                 ),
                 const SizedBox(height: 8),
@@ -69,7 +63,7 @@ class ProgressTimeline extends StatelessWidget {
                   style: TextStyle(
                     fontSize: 11,
                     fontWeight: active ? FontWeight.w700 : FontWeight.w500,
-                    color: active ? AppTheme.text : AppTheme.mutedText,
+                    color: active ? colors.onSurface : colors.onSurfaceVariant,
                   ),
                 ),
               ],

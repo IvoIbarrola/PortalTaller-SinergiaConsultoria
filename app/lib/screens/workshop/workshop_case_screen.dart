@@ -3,7 +3,6 @@ import 'package:flutter/material.dart';
 import '../../models/repair_case.dart';
 import '../../models/vehicle.dart';
 import '../../state/app_state.dart';
-import '../../theme/app_theme.dart';
 import '../../widgets/progress_timeline.dart';
 import '../../widgets/status_badge.dart';
 import '../../widgets/vehicle_card.dart';
@@ -27,12 +26,11 @@ class _WorkshopCaseScreenState extends State<WorkshopCaseScreen> {
     final repairCase = appState.getCaseById(widget.caseId);
 
     if (repairCase == null) {
-      return const Scaffold(
-        body: Center(child: Text('Caso no encontrado.')),
-      );
+      return const Scaffold(body: Center(child: Text('Caso no encontrado.')));
     }
 
-    final vehicle = appState.getVehicleById(repairCase.vehicleId) ??
+    final vehicle =
+        appState.getVehicleById(repairCase.vehicleId) ??
         const Vehicle(
           id: '',
           brand: 'Vehículo',
@@ -44,13 +42,10 @@ class _WorkshopCaseScreenState extends State<WorkshopCaseScreen> {
         );
 
     final insured = appState.getUserById(repairCase.insuredUserId);
-    final progressIndex =
-        ((repairCase.progress / 100) * 3).round().clamp(0, 3);
+    final progressIndex = ((repairCase.progress / 100) * 3).round().clamp(0, 3);
 
     return Scaffold(
-      appBar: AppBar(
-        title: Text(repairCase.claimNumber),
-      ),
+      appBar: AppBar(title: Text(repairCase.claimNumber)),
       body: ListView(
         padding: const EdgeInsets.fromLTRB(20, 12, 20, 24),
         children: [
@@ -59,9 +54,8 @@ class _WorkshopCaseScreenState extends State<WorkshopCaseScreen> {
             children: [
               Text(
                 'Caso asignado',
-                style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                      fontWeight: FontWeight.w700,
-                    ),
+                style: Theme.of(context).textTheme.titleLarge
+                    ?.copyWith(fontWeight: FontWeight.w700),
               ),
               StatusBadge(status: repairCase.status.label),
             ],
@@ -81,10 +75,10 @@ class _WorkshopCaseScreenState extends State<WorkshopCaseScreen> {
                   Text(
                     'INFORMACIÓN DEL CASO',
                     style: Theme.of(context).textTheme.labelMedium?.copyWith(
-                          color: AppTheme.tealInk,
-                          fontWeight: FontWeight.w800,
-                          letterSpacing: 0.7,
-                        ),
+                      color: Theme.of(context).colorScheme.secondary,
+                      fontWeight: FontWeight.w800,
+                      letterSpacing: 0.7,
+                    ),
                   ),
                   const SizedBox(height: 8),
                   Text(repairCase.description),
@@ -108,16 +102,36 @@ class _WorkshopCaseScreenState extends State<WorkshopCaseScreen> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text('DATOS DEL SINIESTRO', style: Theme.of(context).textTheme.labelLarge?.copyWith(fontWeight: FontWeight.w800, color: AppTheme.tealInk)),
+                  Text(
+                    'DATOS DEL SINIESTRO',
+                    style: Theme.of(context).textTheme.labelLarge?.copyWith(
+                      fontWeight: FontWeight.w800,
+                      color: Theme.of(context).colorScheme.secondary,
+                    ),
+                  ),
                   const SizedBox(height: 8),
-                  if (repairCase.fastTrack) const Chip(avatar: Icon(Icons.bolt, size: 18), label: Text('Fast track')),
-                  Text('Compañía: ${repairCase.insurerCompany.isEmpty ? 'Sin dato' : repairCase.insurerCompany}'),
+                  if (repairCase.fastTrack)
+                    const Chip(
+                      avatar: Icon(Icons.bolt, size: 18),
+                      label: Text('Fast track'),
+                    ),
+                  Text(
+                    'Compañía: ${repairCase.insurerCompany.isEmpty ? 'Sin dato' : repairCase.insurerCompany}',
+                  ),
                   Text('Ramo: ${repairCase.claimBranch}'),
-                  Text('Tipo: ${repairCase.claimType.isEmpty ? 'Sin dato' : repairCase.claimType}'),
-                  Text('N.º de compañía: ${repairCase.companyClaimNumber.isEmpty ? 'Sin completar' : repairCase.companyClaimNumber}'),
+                  Text(
+                    'Tipo: ${repairCase.claimType.isEmpty ? 'Sin dato' : repairCase.claimType}',
+                  ),
+                  Text(
+                    'N.º de compañía: ${repairCase.companyClaimNumber.isEmpty ? 'Sin completar' : repairCase.companyClaimNumber}',
+                  ),
                   Text('Patente: ${vehicle.plate}'),
-                  Text('Conductor: ${repairCase.driver.isEmpty ? 'Sin dato' : repairCase.driver}'),
-                  Text('Ubicación: ${repairCase.incidentLocation.isEmpty ? 'Sin dato' : repairCase.incidentLocation}'),
+                  Text(
+                    'Conductor: ${repairCase.driver.isEmpty ? 'Sin dato' : repairCase.driver}',
+                  ),
+                  Text(
+                    'Ubicación: ${repairCase.incidentLocation.isEmpty ? 'Sin dato' : repairCase.incidentLocation}',
+                  ),
                   Text('Origen: ${repairCase.origin}'),
                 ],
               ),
@@ -125,10 +139,8 @@ class _WorkshopCaseScreenState extends State<WorkshopCaseScreen> {
           ),
           const SizedBox(height: 16),
           DropdownButtonFormField<RepairCaseStatus>(
-            value: repairCase.status,
-            decoration: const InputDecoration(
-              labelText: 'Estado',
-            ),
+            initialValue: repairCase.status,
+            decoration: const InputDecoration(labelText: 'Estado'),
             items: RepairCaseStatus.values
                 .map(
                   (status) => DropdownMenuItem(
@@ -137,34 +149,48 @@ class _WorkshopCaseScreenState extends State<WorkshopCaseScreen> {
                   ),
                 )
                 .toList(),
-            onChanged: (value) {
+            onChanged: (value) async {
               if (value == null) return;
-              appState.updateCaseStatus(widget.caseId, value);
-              setState(() {});
+              try {
+                await appState.updateCaseStatus(widget.caseId, value);
+                if (mounted) setState(() {});
+              } catch (error) {
+                if (!context.mounted) return;
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(
+                    content: Text('No se pudo actualizar el estado: $error'),
+                  ),
+                );
+              }
             },
           ),
           const SizedBox(height: 16),
           Text(
             'Avance de reparación · ${repairCase.progress}%',
-            style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                  fontWeight: FontWeight.w700,
-                ),
+            style: Theme.of(context).textTheme.titleSmall
+                ?.copyWith(fontWeight: FontWeight.w700),
           ),
           Slider(
             value: repairCase.progress.toDouble(),
             min: 0,
             max: 100,
             divisions: 100,
-            onChanged: (value) {
-              appState.updateProgress(widget.caseId, value.round());
-              setState(() {});
+            onChanged: (value) async {
+              try {
+                await appState.updateProgress(widget.caseId, value.round());
+                if (mounted) setState(() {});
+              } catch (error) {
+                if (!context.mounted) return;
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(
+                    content: Text('No se pudo guardar el avance: $error'),
+                  ),
+                );
+              }
             },
           ),
           const SizedBox(height: 16),
-          VehicleCard(
-            vehicle: vehicle,
-            status: repairCase.status.label,
-          ),
+          VehicleCard(vehicle: vehicle, status: repairCase.status.label),
           const SizedBox(height: 16),
           FilledButton.icon(
             onPressed: () {
@@ -187,9 +213,7 @@ class _WorkshopCaseScreenState extends State<WorkshopCaseScreen> {
               Navigator.push(
                 context,
                 MaterialPageRoute(
-                  builder: (_) => WorkshopChatScreen(
-                    caseId: repairCase.id,
-                  ),
+                  builder: (_) => WorkshopChatScreen(caseId: repairCase.id),
                 ),
               );
             },

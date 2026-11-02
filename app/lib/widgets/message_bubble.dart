@@ -1,17 +1,12 @@
 import 'package:flutter/material.dart';
 
 import '../models/message.dart';
-import '../theme/app_theme.dart';
 
 class MessageBubble extends StatelessWidget {
   final Message message;
   final bool isMine;
 
-  const MessageBubble({
-    super.key,
-    required this.message,
-    required this.isMine,
-  });
+  const MessageBubble({super.key, required this.message, required this.isMine});
 
   String _formatTime(DateTime createdAt) {
     final hour = createdAt.hour.toString().padLeft(2, '0');
@@ -21,10 +16,9 @@ class MessageBubble extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final textColor = isMine ? Colors.white : AppTheme.text;
-    final bubbleColor = isMine
-        ? Theme.of(context).colorScheme.primary
-        : Theme.of(context).colorScheme.surface;
+    final colors = Theme.of(context).colorScheme;
+    final textColor = isMine ? colors.onPrimary : colors.onSurface;
+    final bubbleColor = isMine ? colors.primary : colors.surface;
 
     return Align(
       alignment: isMine ? Alignment.centerRight : Alignment.centerLeft,
@@ -45,8 +39,9 @@ class MessageBubble extends StatelessWidget {
             ),
           ),
           child: Column(
-            crossAxisAlignment:
-                isMine ? CrossAxisAlignment.end : CrossAxisAlignment.start,
+            crossAxisAlignment: isMine
+                ? CrossAxisAlignment.end
+                : CrossAxisAlignment.start,
             children: [
               if (!isMine)
                 Text(
@@ -58,10 +53,7 @@ class MessageBubble extends StatelessWidget {
                   ),
                 ),
               const SizedBox(height: 4),
-              Text(
-                message.text,
-                style: TextStyle(color: textColor),
-              ),
+              Text(message.text, style: TextStyle(color: textColor)),
               const SizedBox(height: 6),
               Text(
                 _formatTime(message.createdAt),

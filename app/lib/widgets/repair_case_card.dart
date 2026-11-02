@@ -40,9 +40,8 @@ class RepairCaseCard extends StatelessWidget {
                   Expanded(
                     child: Text(
                       repairCase.claimNumber,
-                      style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                            fontWeight: FontWeight.w700,
-                          ),
+                      style: Theme.of(context).textTheme.titleMedium
+                          ?.copyWith(fontWeight: FontWeight.w700),
                     ),
                   ),
                   StatusBadge(status: repairCase.status.label),
@@ -52,16 +51,16 @@ class RepairCaseCard extends StatelessWidget {
               Text(
                 vehicle.displayName,
                 style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                      color: Theme.of(context).colorScheme.onSurface,
-                      fontWeight: FontWeight.w600,
-                    ),
+                  color: Theme.of(context).colorScheme.onSurface,
+                  fontWeight: FontWeight.w600,
+                ),
               ),
               const SizedBox(height: 6),
               Text(
                 repairCase.description,
                 style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                      color: Theme.of(context).colorScheme.onSurfaceVariant,
-                    ),
+                  color: Theme.of(context).colorScheme.onSurfaceVariant,
+                ),
               ),
               const SizedBox(height: 14),
               ClipRRect(
@@ -72,23 +71,23 @@ class RepairCaseCard extends StatelessWidget {
                 ),
               ),
               const SizedBox(height: 9),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              Wrap(
+                alignment: WrapAlignment.spaceBetween,
+                runSpacing: 4,
                 children: [
                   Text(
                     '${repairCase.progress}% completado',
                     style: Theme.of(context).textTheme.labelMedium?.copyWith(
-                          color: Theme.of(context).colorScheme.onSurfaceVariant,
-                          fontWeight: FontWeight.w600,
-                        ),
+                      color: Theme.of(context).colorScheme.onSurfaceVariant,
+                      fontWeight: FontWeight.w600,
+                    ),
                   ),
                   if (repairCase.estimatedDeliveryDate != null)
                     Text(
                       'Entrega: ${_formatDate(repairCase.estimatedDeliveryDate!)}',
                       style: Theme.of(context).textTheme.labelMedium?.copyWith(
-                            color:
-                                Theme.of(context).colorScheme.onSurfaceVariant,
-                          ),
+                        color: Theme.of(context).colorScheme.onSurfaceVariant,
+                      ),
                     ),
                 ],
               ),
