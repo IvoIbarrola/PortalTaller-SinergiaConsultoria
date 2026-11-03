@@ -195,6 +195,15 @@ class _LoginScreenState extends State<LoginScreen> {
                   color: theme.colorScheme.onSurfaceVariant,
                 ),
               ),
+              if (configured && appState.lastError != null) ...[
+                const SizedBox(height: 12),
+                Text(
+                  appState.lastError!,
+                  style: theme.textTheme.bodyMedium?.copyWith(
+                    color: theme.colorScheme.error,
+                  ),
+                ),
+              ],
               const SizedBox(height: 24),
               if (configured) ...[
                 SegmentedButton<bool>(

@@ -37,17 +37,17 @@ class VehiclesManagementScreen extends StatelessWidget {
                           '${vehicle.vehicleType.isEmpty ? '' : '\n${vehicle.vehicleType}'}',
                         ),
                         isThreeLine: vehicle.vehicleType.isNotEmpty,
-                        trailing: appState.isDemoMode
+                        trailing: appState.canManageRecords
                             ? const Icon(Icons.edit_outlined)
                             : null,
-                        onTap: appState.isDemoMode
+                        onTap: appState.canManageRecords
                             ? () => _openVehicleForm(context, vehicle: vehicle)
                             : null,
                       ),
                     );
                   },
                 ),
-          floatingActionButton: appState.isDemoMode
+          floatingActionButton: appState.canManageRecords
               ? FloatingActionButton.extended(
                   onPressed: () => _openVehicleForm(context),
                   icon: const Icon(Icons.add),
@@ -168,7 +168,11 @@ class _VehicleFormScreenState extends State<VehicleFormScreen> {
           mileage: mileage,
           notes: notes,
         );
-        vehicleId = _appState.vehicles.last.id;
+        vehicleId = _appState.vehicles
+            .firstWhere(
+              (item) => item.plate.toUpperCase() == plate.toUpperCase(),
+            )
+            .id;
       } else {
         await _appState.updateVehicle(
           Vehicle(

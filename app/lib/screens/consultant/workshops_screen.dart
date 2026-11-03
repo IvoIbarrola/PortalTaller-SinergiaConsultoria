@@ -86,7 +86,7 @@ class WorkshopsScreen extends StatelessWidget {
                                 ],
                               ),
                             ),
-                            if (appState.isDemoMode)
+                            if (appState.canManageRecords)
                               PopupMenuButton<String>(
                                 tooltip: 'Administrar ${workshop.name}',
                                 onSelected: (action) async {
@@ -136,7 +136,7 @@ class WorkshopsScreen extends StatelessWidget {
                     );
                   },
                 ),
-          floatingActionButton: appState.isDemoMode
+          floatingActionButton: appState.canManageRecords
               ? FloatingActionButton.extended(
                   onPressed: () => _openWorkshopForm(context),
                   icon: const Icon(Icons.add),

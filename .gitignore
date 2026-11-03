@@ -40,6 +40,7 @@ Thumbs.db
 # Supabase local temporary files
 supabase/.temp/
 app/supabase/.temp/
+/app/supabase/supabase_config.json
 
 # Logs
 *.log

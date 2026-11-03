@@ -1,7 +1,10 @@
+import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:image_picker/image_picker.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:supabase_flutter/supabase_flutter.dart' hide User;
@@ -33,8 +36,11 @@ class AppState extends ChangeNotifier {
   bool isLoading = false;
   String? lastError;
   Future<void>? _initialization;
+  RealtimeChannel? _dataChannel;
+  Timer? _refreshDebounce;
   ThemeMode _themeMode = ThemeMode.light;
   final Map<String, List<String>> _photosByCase = {};
+  final Map<String, String> _photoStoragePathsByUrl = {};
   final Map<String, Set<String>> _checklistByCase = {};
   final Map<String, Set<String>> _documentsByCase = {};
   final Map<String, List<String>> _activityByCase = {};
@@ -44,6 +50,7 @@ class AppState extends ChangeNotifier {
   bool get isLoggedIn => _currentUser != null;
   bool get isSupabaseConfigured => SupabaseConfig.client != null;
   bool get isDemoMode => !isSupabaseConfigured;
+  bool get canManageRecords => _currentUser?.role == UserRole.consultant;
 
   SupabaseClient get _client {
     final client = SupabaseConfig.client;
@@ -64,7 +71,14 @@ class AppState extends ChangeNotifier {
       (mode) => mode.name == themeModeName,
       orElse: () => ThemeMode.light,
     );
-    if (!isDemoMode) return;
+    if (!isDemoMode) {
+      try {
+        await _restoreAuthenticatedSession();
+      } catch (error) {
+        lastError = _friendlyError(error);
+      }
+      return;
+    }
 
     final savedState = preferences.getString(_demoStorageKey);
     if (savedState == null) {
@@ -299,6 +313,30 @@ class AppState extends ChangeNotifier {
     notifyListeners();
   }
 
+  Future<void> _restoreAuthenticatedSession() async {
+    final authUser = _client.auth.currentUser;
+    if (authUser == null) return;
+
+    final profile = await _client
+        .from('profiles')
+        .select()
+        .eq('auth_user_id', authUser.id)
+        .maybeSingle();
+    if (profile == null) {
+      await _client.auth.signOut();
+      lastError = 'La cuenta no está vinculada a un perfil de Portal Taller.';
+      return;
+    }
+
+    final user = _userFromRow(profile);
+    _currentUser = user;
+    users
+      ..clear()
+      ..add(user);
+    await refreshData();
+    await _startRealtimeUpdates(user.id);
+  }
+
   Future<User?> signIn(String email, String password) async {
     lastError = null;
     isLoading = true;
@@ -326,13 +364,13 @@ class AppState extends ChangeNotifier {
       }
 
       final user = _userFromRow(profile);
-      final personalizedUser = await _withProfilePreferences(user);
-      _currentUser = personalizedUser;
+      _currentUser = user;
       users
         ..clear()
-        ..add(personalizedUser);
+        ..add(user);
       await refreshData();
-      return personalizedUser;
+      await _startRealtimeUpdates(user.id);
+      return user;
     } catch (error) {
       lastError = _friendlyError(error);
       _currentUser = null;
@@ -362,6 +400,22 @@ class AppState extends ChangeNotifier {
           .from('case_messages')
           .select()
           .order('created_at');
+      final checklistRows = await _client
+          .from('case_checklist_items')
+          .select()
+          .order('sort_order');
+      final documentRows = await _client
+          .from('case_documents')
+          .select()
+          .order('sort_order');
+      final activityRows = await _client
+          .from('case_activity')
+          .select()
+          .order('created_at', ascending: false);
+      final photoRows = await _client
+          .from('case_photos')
+          .select()
+          .order('created_at', ascending: false);
 
       repairCases
         ..clear()
@@ -398,16 +452,53 @@ class AppState extends ChangeNotifier {
             (row) => _messageFromRow(Map<String, dynamic>.from(row)),
           ),
         );
+      _checklistByCase.clear();
+      for (final row in checklistRows as List) {
+        final item = Map<String, dynamic>.from(row);
+        if (item['completed'] == true) {
+          _checklistByCase
+              .putIfAbsent(item['case_id'].toString(), () => <String>{})
+              .add(item['title'].toString());
+        }
+      }
+      _documentsByCase.clear();
+      for (final row in documentRows as List) {
+        final item = Map<String, dynamic>.from(row);
+        if (item['received'] == true) {
+          _documentsByCase
+              .putIfAbsent(item['case_id'].toString(), () => <String>{})
+              .add(item['title'].toString());
+        }
+      }
+      _activityByCase.clear();
+      for (final row in activityRows as List) {
+        final item = Map<String, dynamic>.from(row);
+        _activityByCase
+            .putIfAbsent(item['case_id'].toString(), () => <String>[])
+            .add(item['entry_text'].toString());
+      }
+      _photosByCase.clear();
+      _photoStoragePathsByUrl.clear();
+      for (final row in photoRows as List) {
+        final item = Map<String, dynamic>.from(row);
+        final storagePath = item['storage_path'].toString();
+        final signedUrl = await _client.storage
+            .from('case-photos')
+            .createSignedUrl(storagePath, 3600);
+        final url = signedUrl.signedUrl;
+        final casePhotos = _photosByCase.putIfAbsent(
+          item['case_id'].toString(),
+          () => <String>[],
+        );
+        casePhotos.add(url);
+        _photoStoragePathsByUrl[url] = storagePath;
+      }
       if (_currentUser != null) {
         final currentIndex = users.indexWhere(
           (user) => user.id == _currentUser!.id,
         );
         if (currentIndex >= 0) {
-          final personalizedUser = await _withProfilePreferences(
-            users[currentIndex],
-          );
-          users[currentIndex] = personalizedUser;
-          _currentUser = personalizedUser;
+          _currentUser = users[currentIndex];
         }
       }
     } catch (error) {
@@ -416,6 +507,50 @@ class AppState extends ChangeNotifier {
     } finally {
       notifyListeners();
     }
+  }
+
+  Future<void> _startRealtimeUpdates(String userId) async {
+    _refreshDebounce?.cancel();
+    final previous = _dataChannel;
+    if (previous != null) {
+      await _client.removeChannel(previous);
+    }
+
+    final channel = _client.channel('portal-taller-$userId');
+    for (final table in [
+      'profiles',
+      'workshops',
+      'vehicles',
+      'repair_cases',
+      'case_messages',
+      'case_checklist_items',
+      'case_documents',
+      'case_activity',
+      'case_photos',
+    ]) {
+      channel.onPostgresChanges(
+        event: PostgresChangeEvent.all,
+        schema: 'public',
+        table: table,
+        callback: (_) => _scheduleRealtimeRefresh(),
+      );
+    }
+    _dataChannel = channel;
+    channel.subscribe();
+  }
+
+  void _scheduleRealtimeRefresh() {
+    _refreshDebounce?.cancel();
+    _refreshDebounce = Timer(const Duration(milliseconds: 350), () {
+      if (_currentUser == null || isDemoMode) return;
+      unawaited(
+        refreshData().catchError((Object error) {
+          debugPrint(
+            'Supabase realtime refresh failed: ${_friendlyError(error)}',
+          );
+        }),
+      );
+    });
   }
 
   String _friendlyError(Object error) {
@@ -443,6 +578,7 @@ class AppState extends ChangeNotifier {
   );
 
   Future<User> _withProfilePreferences(User user) async {
+    if (!isDemoMode) return user;
     final preferences = await SharedPreferences.getInstance();
     final savedProfiles = preferences.getString(_profilePreferencesKey);
     if (savedProfiles == null) return user;
@@ -485,6 +621,27 @@ class AppState extends ChangeNotifier {
       email: email.trim(),
       phone: phone.trim(),
     );
+    if (!isDemoMode) {
+      final updated = await _client
+          .from('profiles')
+          .update({
+            'name': updatedUser.name,
+            'email': updatedUser.email,
+            'phone': updatedUser.phone,
+          })
+          .eq('id', user.id)
+          .select('id')
+          .maybeSingle();
+      if (updated == null) {
+        throw StateError('No se pudo actualizar el perfil en Supabase.');
+      }
+      final userIndex = users.indexWhere((item) => item.id == user.id);
+      if (userIndex >= 0) users[userIndex] = updatedUser;
+      _currentUser = updatedUser;
+      notifyListeners();
+      return;
+    }
+
     final preferences = await SharedPreferences.getInstance();
     final savedProfiles = preferences.getString(_profilePreferencesKey);
     final profiles = savedProfiles == null
@@ -653,7 +810,7 @@ class AppState extends ChangeNotifier {
     int? mileage,
     String notes = '',
   }) async {
-    _requireLocalAdministration();
+    _requireConsultant();
     await initialize();
     final normalizedPlate = _validateVehicle(
       brand: brand,
@@ -669,29 +826,46 @@ class AppState extends ChangeNotifier {
       throw StateError('Ya existe un vehículo registrado con esa patente.');
     }
 
-    vehicles.add(
-      Vehicle(
-        id: _newId('vehicle', vehicles.map((item) => item.id)),
-        brand: brand.trim(),
-        model: model.trim(),
-        year: year,
-        plate: plate.trim().toUpperCase(),
-        color: color.trim(),
-        imageUrl: '',
-        insuredUserId: insuredUserId,
-        vehicleType: vehicleType.trim(),
-        trim: trim.trim(),
-        vin: vin.trim().toUpperCase(),
-        mileage: mileage,
-        notes: notes.trim(),
-      ),
+    final vehicle = Vehicle(
+      id: _newId('vehicle', vehicles.map((item) => item.id)),
+      brand: brand.trim(),
+      model: model.trim(),
+      year: year,
+      plate: plate.trim().toUpperCase(),
+      color: color.trim(),
+      imageUrl: '',
+      insuredUserId: insuredUserId,
+      vehicleType: vehicleType.trim(),
+      trim: trim.trim(),
+      vin: vin.trim().toUpperCase(),
+      mileage: mileage,
+      notes: notes.trim(),
     );
+    if (!isDemoMode) {
+      await _client.from('vehicles').insert({
+        'brand': vehicle.brand,
+        'model': vehicle.model,
+        'year': vehicle.year,
+        'plate': vehicle.plate,
+        'color': vehicle.color,
+        'image_url': vehicle.imageUrl,
+        'insured_user_id': vehicle.insuredUserId,
+        'vehicle_type': vehicle.vehicleType,
+        'trim': vehicle.trim,
+        'vin': vehicle.vin,
+        'mileage': vehicle.mileage,
+        'notes': vehicle.notes,
+      });
+      await refreshData();
+      return;
+    }
+    vehicles.add(vehicle);
     await _persistDemoData();
     notifyListeners();
   }
 
   Future<void> updateVehicle(Vehicle vehicle) async {
-    _requireLocalAdministration();
+    _requireConsultant();
     await initialize();
     final index = vehicles.indexWhere((item) => item.id == vehicle.id);
     if (index < 0) throw StateError('No se encontró el vehículo.');
@@ -718,7 +892,7 @@ class AppState extends ChangeNotifier {
       throw StateError('Ya existe un vehículo registrado con esa patente.');
     }
 
-    vehicles[index] = vehicle.copyWith(
+    final updatedVehicle = vehicle.copyWith(
       brand: vehicle.brand.trim(),
       model: vehicle.model.trim(),
       plate: vehicle.plate.trim().toUpperCase(),
@@ -728,6 +902,33 @@ class AppState extends ChangeNotifier {
       vin: vehicle.vin.trim().toUpperCase(),
       notes: vehicle.notes.trim(),
     );
+    if (!isDemoMode) {
+      final updated = await _client
+          .from('vehicles')
+          .update({
+            'brand': updatedVehicle.brand,
+            'model': updatedVehicle.model,
+            'year': updatedVehicle.year,
+            'plate': updatedVehicle.plate,
+            'color': updatedVehicle.color,
+            'image_url': updatedVehicle.imageUrl,
+            'insured_user_id': updatedVehicle.insuredUserId,
+            'vehicle_type': updatedVehicle.vehicleType,
+            'trim': updatedVehicle.trim,
+            'vin': updatedVehicle.vin,
+            'mileage': updatedVehicle.mileage,
+            'notes': updatedVehicle.notes,
+          })
+          .eq('id', updatedVehicle.id)
+          .select('id')
+          .maybeSingle();
+      if (updated == null) {
+        throw StateError('No se pudo actualizar el vehículo en Supabase.');
+      }
+      await refreshData();
+      return;
+    }
+    vehicles[index] = updatedVehicle;
     await _persistDemoData();
     notifyListeners();
   }
@@ -741,7 +942,7 @@ class AppState extends ChangeNotifier {
     String contactName = '',
     List<String> specialties = const [],
   }) async {
-    _requireLocalAdministration();
+    _requireConsultant();
     await initialize();
     _validateWorkshop(name: name, city: city, rating: rating);
     final id = _newId('workshop', workshops.map((item) => item.id));
@@ -755,6 +956,20 @@ class AppState extends ChangeNotifier {
       contactName: contactName.trim(),
       specialties: _cleanSpecialties(specialties),
     );
+    if (!isDemoMode) {
+      await _client.from('workshops').insert({
+        'name': workshop.name,
+        'city': workshop.city,
+        'phone': workshop.phone,
+        'rating': workshop.rating,
+        'address': workshop.address,
+        'contact_name': workshop.contactName,
+        'specialties': workshop.specialties,
+        'is_active': workshop.isActive,
+      });
+      await refreshData();
+      return;
+    }
     workshops.add(workshop);
     users.add(
       User(
@@ -769,7 +984,7 @@ class AppState extends ChangeNotifier {
   }
 
   Future<void> updateWorkshop(Workshop workshop) async {
-    _requireLocalAdministration();
+    _requireConsultant();
     await initialize();
     final index = workshops.indexWhere((item) => item.id == workshop.id);
     if (index < 0) throw StateError('No se encontró el taller.');
@@ -786,6 +1001,28 @@ class AppState extends ChangeNotifier {
       contactName: workshop.contactName.trim(),
       specialties: _cleanSpecialties(workshop.specialties),
     );
+    if (!isDemoMode) {
+      final updatedRow = await _client
+          .from('workshops')
+          .update({
+            'name': updated.name,
+            'city': updated.city,
+            'phone': updated.phone,
+            'rating': updated.rating,
+            'address': updated.address,
+            'contact_name': updated.contactName,
+            'specialties': updated.specialties,
+            'is_active': updated.isActive,
+          })
+          .eq('id', updated.id)
+          .select('id')
+          .maybeSingle();
+      if (updatedRow == null) {
+        throw StateError('No se pudo actualizar el taller en Supabase.');
+      }
+      await refreshData();
+      return;
+    }
     workshops[index] = updated;
     final userIndex = users.indexWhere(
       (user) =>
@@ -804,20 +1041,31 @@ class AppState extends ChangeNotifier {
   }
 
   Future<void> setWorkshopActive(String workshopId, bool isActive) async {
-    _requireLocalAdministration();
+    _requireConsultant();
     await initialize();
     final index = workshops.indexWhere((item) => item.id == workshopId);
     if (index < 0) throw StateError('No se encontró el taller.');
+    if (!isDemoMode) {
+      final updatedRow = await _client
+          .from('workshops')
+          .update({'is_active': isActive})
+          .eq('id', workshopId)
+          .select('id')
+          .maybeSingle();
+      if (updatedRow == null) {
+        throw StateError('No se pudo actualizar el taller en Supabase.');
+      }
+      await refreshData();
+      return;
+    }
     workshops[index] = workshops[index].copyWith(isActive: isActive);
     await _persistDemoData();
     notifyListeners();
   }
 
-  void _requireLocalAdministration() {
-    if (!isDemoMode) {
-      throw UnsupportedError(
-        'La administración local está disponible solo en modo demo.',
-      );
+  void _requireConsultant() {
+    if (_currentUser?.role != UserRole.consultant) {
+      throw StateError('Esta acción requiere un perfil de consultoría.');
     }
   }
 
@@ -893,6 +1141,19 @@ class AppState extends ChangeNotifier {
     String task,
     bool completed,
   ) async {
+    if (!isDemoMode) {
+      await _client.from('case_checklist_items').upsert({
+        'case_id': caseId,
+        'title': task,
+        'completed': completed,
+        'completed_at': completed
+            ? DateTime.now().toUtc().toIso8601String()
+            : null,
+        'completed_by': _currentUser?.id,
+      }, onConflict: 'case_id,title');
+      await refreshData();
+      return;
+    }
     final items = _checklistByCase.putIfAbsent(caseId, () => <String>{});
     if (completed) {
       items.add(task);
@@ -911,6 +1172,19 @@ class AppState extends ChangeNotifier {
     String document,
     bool received,
   ) async {
+    if (!isDemoMode) {
+      await _client.from('case_documents').upsert({
+        'case_id': caseId,
+        'title': document,
+        'received': received,
+        'received_at': received
+            ? DateTime.now().toUtc().toIso8601String()
+            : null,
+        'received_by': _currentUser?.id,
+      }, onConflict: 'case_id,title');
+      await refreshData();
+      return;
+    }
     final items = _documentsByCase.putIfAbsent(caseId, () => <String>{});
     if (received) {
       items.add(document);
@@ -927,12 +1201,28 @@ class AppState extends ChangeNotifier {
   Future<void> addCaseActivity(String caseId, String note) async {
     final value = note.trim();
     if (value.isEmpty) return;
+    if (!isDemoMode) {
+      await _client.from('case_activity').insert({
+        'case_id': caseId,
+        'entry_text': value,
+        'author': _currentUser?.name ?? 'Sistema',
+        'origin': 'Portal Taller',
+      });
+      await refreshData();
+      return;
+    }
     _activityByCase.putIfAbsent(caseId, () => <String>[]).insert(0, value);
     await _persistDemoData();
     notifyListeners();
   }
 
   Future<void> logout() async {
+    _refreshDebounce?.cancel();
+    final channel = _dataChannel;
+    _dataChannel = null;
+    if (channel != null && !isDemoMode) {
+      await _client.removeChannel(channel);
+    }
     await SupabaseConfig.client?.auth.signOut();
     _currentUser = null;
     if (!isDemoMode) {
@@ -941,6 +1231,9 @@ class AppState extends ChangeNotifier {
       workshops.clear();
       repairCases.clear();
       messages.clear();
+      _checklistByCase.clear();
+      _documentsByCase.clear();
+      _activityByCase.clear();
     }
     notifyListeners();
   }
@@ -952,22 +1245,27 @@ class AppState extends ChangeNotifier {
     required String description,
     String? workshopId,
   }) async {
+    _requireConsultant();
+    await initialize();
+    final insured = getUserById(insuredUserId);
+    final vehicle = getVehicleById(vehicleId);
+    if (insured?.role != UserRole.insured) {
+      throw StateError('Seleccioná un asegurado válido para el nuevo caso.');
+    }
+    if (vehicle == null) {
+      throw StateError('Seleccioná un vehículo válido para el nuevo caso.');
+    }
+    if (vehicle.insuredUserId.isNotEmpty &&
+        vehicle.insuredUserId != insuredUserId) {
+      throw StateError('El vehículo no pertenece al asegurado seleccionado.');
+    }
+    if (claimNumber.trim().isEmpty) {
+      throw StateError('Ingresá un número de siniestro válido.');
+    }
+    if (workshopId != null && getWorkshopById(workshopId)?.isActive != true) {
+      throw StateError('El taller seleccionado no existe o está inactivo.');
+    }
     if (isDemoMode) {
-      await initialize();
-      if (getUserById(insuredUserId)?.role != UserRole.insured) {
-        throw StateError('Seleccioná un asegurado válido para el nuevo caso.');
-      }
-      if (getVehicleById(vehicleId) == null) {
-        throw StateError('Seleccioná un vehículo válido para el nuevo caso.');
-      }
-      final vehicle = getVehicleById(vehicleId)!;
-      if (vehicle.insuredUserId.isNotEmpty &&
-          vehicle.insuredUserId != insuredUserId) {
-        throw StateError('El vehículo no pertenece al asegurado seleccionado.');
-      }
-      if (workshopId != null && getWorkshopById(workshopId)?.isActive != true) {
-        throw StateError('El taller seleccionado no existe.');
-      }
       final now = DateTime.now();
       repairCases.insert(
         0,
@@ -1013,6 +1311,7 @@ class AppState extends ChangeNotifier {
   }
 
   Future<void> assignWorkshop(String caseId, String workshopId) async {
+    _requireConsultant();
     if (isDemoMode) {
       await initialize();
       final caseIndex = repairCases.indexWhere((item) => item.id == caseId);
@@ -1028,17 +1327,27 @@ class AppState extends ChangeNotifier {
       return;
     }
 
-    await _client
+    final updatedRow = await _client
         .from('repair_cases')
         .update({
           'workshop_id': workshopId,
           'status': RepairCaseStatus.workshopAssigned.name,
         })
-        .eq('id', caseId);
+        .eq('id', caseId)
+        .select('id')
+        .maybeSingle();
+    if (updatedRow == null) {
+      throw StateError('No se pudo asignar el taller al caso.');
+    }
     await refreshData();
   }
 
   Future<void> updateProgress(String caseId, int progress) async {
+    if (_currentUser == null ||
+        (_currentUser!.role != UserRole.consultant &&
+            _currentUser!.role != UserRole.workshop)) {
+      throw StateError('Tu perfil no puede actualizar el avance del caso.');
+    }
     if (isDemoMode) {
       await initialize();
       final caseIndex = repairCases.indexWhere((item) => item.id == caseId);
@@ -1053,37 +1362,83 @@ class AppState extends ChangeNotifier {
       return;
     }
 
-    await _client
+    final updatedRow = await _client
         .from('repair_cases')
         .update({'progress': progress.clamp(0, 100)})
-        .eq('id', caseId);
+        .eq('id', caseId)
+        .select('id')
+        .maybeSingle();
+    if (updatedRow == null) {
+      throw StateError('No se pudo actualizar el avance del caso.');
+    }
     await refreshData();
   }
 
   List<String> photosForCase(String caseId) =>
       List.unmodifiable(_photosByCase[caseId] ?? const <String>[]);
 
-  Future<void> addPhotoToCase(String caseId, String photoPath) async {
-    if (!isDemoMode) {
-      throw UnsupportedError(
-        'La carga de fotos en Supabase requiere integrar Storage y sus políticas de acceso.',
-      );
-    }
+  Future<void> addPhotoToCase(String caseId, XFile photo) async {
     await initialize();
-    final source = File(photoPath);
+    if (!isDemoMode) {
+      final bytes = await photo.readAsBytes();
+      final extension = photo.name.contains('.')
+          ? photo.name.substring(photo.name.lastIndexOf('.'))
+          : '.jpg';
+      final storagePath =
+          '$caseId/${DateTime.now().microsecondsSinceEpoch}$extension';
+      await _client.storage
+          .from('case-photos')
+          .uploadBinary(
+            storagePath,
+            bytes,
+            fileOptions: FileOptions(
+              contentType: photo.mimeType ?? 'image/jpeg',
+              upsert: false,
+            ),
+          );
+      try {
+        await _client.from('case_photos').insert({
+          'case_id': caseId,
+          'storage_path': storagePath,
+          'uploaded_by': _currentUser?.id,
+          'caption': '',
+        });
+      } catch (error) {
+        try {
+          await _client.storage.from('case-photos').remove([storagePath]);
+        } catch (cleanupError) {
+          debugPrint(
+            'Could not remove orphaned case photo: $cleanupError',
+          );
+        }
+        rethrow;
+      }
+      await refreshData();
+      return;
+    }
+
+    final photoBytes = await photo.readAsBytes();
+    if (kIsWeb) {
+      final mimeType = photo.mimeType ?? 'image/jpeg';
+      _photosByCase
+          .putIfAbsent(caseId, () => <String>[])
+          .add('data:$mimeType;base64,${base64Encode(photoBytes)}');
+      await _persistDemoData();
+      notifyListeners();
+      return;
+    }
+
+    final source = File(photo.path);
     if (!await source.exists()) {
-      throw FileSystemException(
-        'No se encontró la fotografía seleccionada.',
-        photoPath,
-      );
+      throw FileSystemException('No se encontró la fotografía seleccionada.');
     }
     final documentsDirectory = await getApplicationDocumentsDirectory();
     final photosDirectory = Directory(
       '${documentsDirectory.path}${Platform.pathSeparator}case_photos',
     );
     await photosDirectory.create(recursive: true);
-    final extension = photoPath.contains('.')
-        ? photoPath.substring(photoPath.lastIndexOf('.'))
+    final extension = photo.name.contains('.')
+        ? photo.name.substring(photo.name.lastIndexOf('.'))
         : '.jpg';
     final persistedPath =
         '${photosDirectory.path}${Platform.pathSeparator}$caseId-${DateTime.now().microsecondsSinceEpoch}$extension';
@@ -1095,20 +1450,40 @@ class AppState extends ChangeNotifier {
 
   Future<void> removePhotoFromCase(String caseId, String photoPath) async {
     if (!isDemoMode) {
-      throw UnsupportedError(
-        'La eliminación de fotos en Supabase requiere integrar Storage y sus políticas de acceso.',
-      );
+      final storagePath = _photoStoragePathsByUrl[photoPath];
+      if (storagePath == null) {
+        throw StateError('No se encontró la fotografía seleccionada.');
+      }
+      await _client.storage.from('case-photos').remove([storagePath]);
+      final deleted = await _client
+          .from('case_photos')
+          .delete()
+          .eq('storage_path', storagePath)
+          .select('id')
+          .maybeSingle();
+      if (deleted == null) {
+        throw StateError('No se pudo eliminar la fotografía del caso.');
+      }
+      await refreshData();
+      return;
     }
     final photos = _photosByCase[caseId];
     if (photos == null || !photos.contains(photoPath)) return;
-    final photo = File(photoPath);
-    if (await photo.exists()) await photo.delete();
+    if (!kIsWeb) {
+      final photo = File(photoPath);
+      if (await photo.exists()) await photo.delete();
+    }
     photos.remove(photoPath);
     await _persistDemoData();
     notifyListeners();
   }
 
   Future<void> updateCaseStatus(String caseId, RepairCaseStatus status) async {
+    if (_currentUser == null ||
+        (_currentUser!.role != UserRole.consultant &&
+            _currentUser!.role != UserRole.workshop)) {
+      throw StateError('Tu perfil no puede actualizar el estado del caso.');
+    }
     if (isDemoMode) {
       await initialize();
       final caseIndex = repairCases.indexWhere((item) => item.id == caseId);
@@ -1121,10 +1496,15 @@ class AppState extends ChangeNotifier {
       return;
     }
 
-    await _client
+    final updatedRow = await _client
         .from('repair_cases')
         .update({'status': status.name})
-        .eq('id', caseId);
+        .eq('id', caseId)
+        .select('id')
+        .maybeSingle();
+    if (updatedRow == null) {
+      throw StateError('No se pudo actualizar el estado del caso.');
+    }
     await refreshData();
   }
 
@@ -1135,6 +1515,10 @@ class AppState extends ChangeNotifier {
     required String text,
   }) async {
     if (text.trim().isEmpty) return;
+    final user = _currentUser;
+    if (user == null || user.id != senderId) {
+      throw StateError('Iniciá sesión para enviar un mensaje.');
+    }
     if (isDemoMode) {
       await initialize();
       if (getCaseById(caseId) == null) {

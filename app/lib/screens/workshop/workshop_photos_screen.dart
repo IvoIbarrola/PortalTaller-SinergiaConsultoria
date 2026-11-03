@@ -1,5 +1,7 @@
+import 'dart:convert';
 import 'dart:io';
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 
@@ -44,7 +46,7 @@ class _WorkshopPhotosScreenState extends State<WorkshopPhotosScreen> {
       if (!mounted) return;
 
       if (photo != null) {
-        await appState.addPhotoToCase(widget.caseId, photo.path);
+        await appState.addPhotoToCase(widget.caseId, photo);
         if (!mounted) return;
 
         setState(() {});
@@ -185,18 +187,7 @@ class _WorkshopPhotosScreenState extends State<WorkshopPhotosScreen> {
                         child: Stack(
                           fit: StackFit.expand,
                           children: [
-                            Image.file(
-                              File(path),
-                              fit: BoxFit.cover,
-                              errorBuilder: (_, _, _) {
-                                return const Center(
-                                  child: Icon(
-                                    Icons.broken_image_outlined,
-                                    size: 40,
-                                  ),
-                                );
-                              },
-                            ),
+                            _buildPhoto(path),
                             Positioned(
                               left: 8,
                               bottom: 8,
@@ -241,6 +232,27 @@ class _WorkshopPhotosScreenState extends State<WorkshopPhotosScreen> {
           ),
         ],
       ),
+    );
+  }
+
+  Widget _buildPhoto(String path) {
+    final ImageErrorWidgetBuilder errorBuilder = (_, _, _) => const Center(
+      child: Icon(Icons.broken_image_outlined, size: 40),
+    );
+    if (path.startsWith('data:')) {
+      return Image.memory(
+        base64Decode(path.substring(path.indexOf(',') + 1)),
+        fit: BoxFit.cover,
+        errorBuilder: errorBuilder,
+      );
+    }
+    if (path.startsWith('https://') || kIsWeb) {
+      return Image.network(path, fit: BoxFit.cover, errorBuilder: errorBuilder);
+    }
+    return Image.file(
+      File(path),
+      fit: BoxFit.cover,
+      errorBuilder: errorBuilder,
     );
   }
 }
