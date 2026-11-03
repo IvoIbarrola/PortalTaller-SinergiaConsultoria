@@ -1,18 +1,20 @@
 import 'package:flutter/material.dart';
 
 class AppTheme {
-  static const navy = Color(0xFF142330);
-  static const teal = Color(0xFF37B8B0);
-  static const tealInk = Color(0xFF176C68);
-  static const coral = Color(0xFFF47D65);
-  static const background = Color(0xFFF3F6F8);
-  static const surface = Color(0xFFFFFFFF);
-  static const text = Color(0xFF1B2935);
-  static const mutedText = Color(0xFF687783);
-  static const border = Color(0xFFDCE4E9);
-  static const success = Color(0xFF287F68);
-  static const warning = Color(0xFFAA681C);
-  static const attention = Color(0xFFB64F43);
+  static const ink = Color(0xFF10242D);
+  static const navy = ink;
+  static const teal = Color(0xFF127E78);
+  static const tealInk = Color(0xFF0D625D);
+  static const mint = Color(0xFF83D9CA);
+  static const coral = Color(0xFFEF6848);
+  static const background = Color(0xFFF7F4ED);
+  static const surface = Color(0xFFFFFEFB);
+  static const text = ink;
+  static const mutedText = Color(0xFF53656A);
+  static const border = Color(0xFFDEDFD6);
+  static const success = teal;
+  static const warning = Color(0xFF9A5B18);
+  static const attention = Color(0xFFB84D38);
 
   static ThemeData get light => _createTheme(Brightness.light);
 
@@ -20,21 +22,21 @@ class AppTheme {
 
   static ThemeData _createTheme(Brightness brightness) {
     final isDark = brightness == Brightness.dark;
-    final backgroundColor = isDark ? const Color(0xFF101820) : background;
-    final surfaceColor = isDark ? const Color(0xFF1C2730) : surface;
-    final borderColor = isDark ? const Color(0xFF36434D) : border;
-    final primaryColor = isDark ? teal : navy;
-    final textColor = isDark ? const Color(0xFFF1F5F7) : navy;
-    final secondaryColor = isDark ? const Color(0xFF74D5CE) : teal;
+    final backgroundColor = isDark ? const Color(0xFF0B191E) : background;
+    final surfaceColor = isDark ? const Color(0xFF17272C) : surface;
+    final borderColor = isDark ? const Color(0xFF34464A) : border;
+    final primaryColor = isDark ? mint : teal;
+    final textColor = isDark ? const Color(0xFFF3F4EF) : ink;
+    final secondaryColor = isDark ? mint : teal;
     final colorScheme = ColorScheme.fromSeed(
       brightness: brightness,
-      seedColor: isDark ? teal : navy,
+      seedColor: teal,
       primary: primaryColor,
-      onPrimary: isDark ? navy : Colors.white,
+      onPrimary: isDark ? ink : Colors.white,
       secondary: secondaryColor,
       tertiary: coral,
       surface: surfaceColor,
-      onSurface: isDark ? const Color(0xFFE7EDF0) : text,
+      onSurface: isDark ? const Color(0xFFE9EFEB) : text,
       error: isDark ? const Color(0xFFFFB4AB) : attention,
     );
 
@@ -43,15 +45,23 @@ class AppTheme {
       colorScheme: colorScheme,
       brightness: brightness,
       scaffoldBackgroundColor: backgroundColor,
+      fontFamily: 'DM Sans',
+      textTheme: ThemeData(brightness: brightness, useMaterial3: true).textTheme
+          .apply(
+            bodyColor: textColor,
+            displayColor: textColor,
+            fontFamily: 'DM Sans',
+          ),
       appBarTheme: AppBarTheme(
         backgroundColor: backgroundColor,
         foregroundColor: textColor,
         centerTitle: false,
         elevation: 0,
-        scrolledUnderElevation: 1,
+        scrolledUnderElevation: 0,
         titleTextStyle: TextStyle(
           color: textColor,
-          fontSize: 20,
+          fontFamily: 'Manrope',
+          fontSize: 19,
           fontWeight: FontWeight.w700,
         ),
       ),
@@ -60,7 +70,7 @@ class AppTheme {
         elevation: 0,
         margin: EdgeInsets.zero,
         shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(14),
+          borderRadius: BorderRadius.circular(18),
           side: BorderSide(color: borderColor),
         ),
       ),
@@ -72,15 +82,15 @@ class AppTheme {
           vertical: 15,
         ),
         border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(10),
+          borderRadius: BorderRadius.circular(12),
           borderSide: BorderSide(color: borderColor),
         ),
         enabledBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(10),
+          borderRadius: BorderRadius.circular(12),
           borderSide: BorderSide(color: borderColor),
         ),
         focusedBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(10),
+          borderRadius: BorderRadius.circular(12),
           borderSide: BorderSide(color: secondaryColor, width: 1.5),
         ),
       ),
@@ -91,7 +101,7 @@ class AppTheme {
           minimumSize: const Size(48, 50),
           padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
           shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(10),
+            borderRadius: BorderRadius.circular(12),
           ),
           textStyle: const TextStyle(fontWeight: FontWeight.w700),
         ),
@@ -103,7 +113,7 @@ class AppTheme {
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
           side: BorderSide(color: borderColor),
           shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(10),
+            borderRadius: BorderRadius.circular(12),
           ),
         ),
       ),
@@ -121,8 +131,8 @@ class AppTheme {
       progressIndicatorTheme: ProgressIndicatorThemeData(
         color: secondaryColor,
         linearTrackColor: isDark
-            ? const Color(0xFF35434C)
-            : const Color(0xFFE5ECEF),
+            ? const Color(0xFF34464A)
+            : const Color(0xFFE7E8DE),
       ),
       sliderTheme: SliderThemeData(
         activeTrackColor: secondaryColor,

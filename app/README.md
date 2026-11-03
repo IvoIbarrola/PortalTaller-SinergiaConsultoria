@@ -4,6 +4,14 @@ Aplicación piloto Flutter para el seguimiento de siniestros y reparaciones por
 parte de asegurados, talleres y consultoría. La identidad visual toma como
 referencia la paleta azul marino, turquesa y coral del sitio de Grupo Sinergia.
 
+## Identidad visual
+
+La app móvil y la versión web comparten el mismo tema Flutter, basado en la
+identidad oficial de Grupo Sinergia: tinta `#10242D`, verde azulado `#127E78`,
+menta `#83D9CA`, coral `#EF6848` y fondo cálido `#F7F4ED`. La interfaz prioriza
+resúmenes breves, acciones visibles y diseños adaptables al ancho de pantalla.
+En web se usan DM Sans y Manrope, las tipografías del sitio oficial.
+
 ## Demo local para presentación
 
 La app funciona sin conexión a Supabase cuando no se pasan las variables

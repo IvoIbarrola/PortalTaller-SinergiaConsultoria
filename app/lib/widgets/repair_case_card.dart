@@ -58,6 +58,8 @@ class RepairCaseCard extends StatelessWidget {
               const SizedBox(height: 6),
               Text(
                 repairCase.description,
+                maxLines: 2,
+                overflow: TextOverflow.ellipsis,
                 style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                   color: Theme.of(context).colorScheme.onSurfaceVariant,
                 ),

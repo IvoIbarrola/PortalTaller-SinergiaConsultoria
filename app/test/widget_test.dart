@@ -57,8 +57,9 @@ void main() {
     await tester.ensureVisible(consultantEntry);
     await tester.tap(consultantEntry);
     await tester.pumpAndSettle();
-    expect(find.text('Seguimiento de siniestros'), findsOneWidget);
-    expect(find.text('3 casos en la red'), findsOneWidget);
+    expect(find.text('Tu operación, en un solo lugar.'), findsOneWidget);
+    expect(find.text('Casos activos'), findsOneWidget);
+    expect(find.text('En talleres'), findsOneWidget);
 
     await tester.tap(find.byTooltip('Configuración'));
     await tester.pumpAndSettle();
