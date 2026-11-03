@@ -482,10 +482,9 @@ class AppState extends ChangeNotifier {
       for (final row in photoRows as List) {
         final item = Map<String, dynamic>.from(row);
         final storagePath = item['storage_path'].toString();
-        final signedUrl = await _client.storage
-            .from('case-photos')
-            .createSignedUrl(storagePath, 3600);
-        final url = signedUrl.signedUrl;
+        final url = await _client.storage
+          .from('case-photos')
+          .createSignedUrl(storagePath, 3600);
         final casePhotos = _photosByCase.putIfAbsent(
           item['case_id'].toString(),
           () => <String>[],
