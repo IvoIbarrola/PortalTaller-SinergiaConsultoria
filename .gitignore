@@ -1,0 +1,46 @@
+# Flutter / Dart
+.dart_tool/
+.packages
+.pub/
+.pub-cache/
+.flutter-plugins
+.flutter-plugins-dependencies
+build/
+coverage/
+
+# Flutter generated files
+app/.dart_tool/
+app/build/
+
+# Android / Gradle
+.gradle/
+.gradle-download/
+.gradle-download/gradle-9.3.1-all.zip
+**/android/local.properties
+**/android/.gradle/
+**/android/captures/
+**/android/key.properties
+*.jks
+*.keystore
+
+# IDEs
+.idea/
+.vscode/
+*.iml
+
+# Operating system
+.DS_Store
+Thumbs.db
+
+# Environment variables and secrets
+.env
+.env.*
+!.env.example
+
+# Supabase local temporary files
+supabase/.temp/
+app/supabase/.temp/
+/app/supabase/supabase_config.json
+
+# Logs
+*.log
